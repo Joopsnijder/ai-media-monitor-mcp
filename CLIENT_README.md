@@ -15,7 +15,11 @@ De client kan verschillende acties uitvoeren:
 Zorg ervoor dat alle dependencies geïnstalleerd zijn:
 
 ```bash
+# Basis installatie
 uv sync
+
+# Met email functionaliteit
+uv sync --extra email
 ```
 
 ## Gebruik
@@ -44,6 +48,15 @@ uv run client --action trends --period week --format json
 uv run client --action experts --period month --format both
 ```
 
+**Met email verzending:**
+```bash
+# Genereer rapport en verstuur via email
+uv run client --action weekly-report --email
+
+# Alleen email versturen (geen bestanden opslaan)
+uv run client --action weekly-report --email-only
+```
+
 ### 2. Opties
 
 - `--action`: Actie om uit te voeren (`weekly-report`, `scan`, `trends`, `experts`)
@@ -51,8 +64,47 @@ uv run client --action experts --period month --format both
 - `--hours`: Aantal uren terug te scannen (voor scan actie)
 - `--period`: Periode voor trends/experts (`day`, `week`, `month`)
 - `--output`: Specifiek output bestand (optioneel)
+- `--email`: Verstuur rapport ook via email
+- `--email-only`: Alleen email versturen, geen bestanden opslaan
 
-### 3. Automatisch Uitvoeren
+### 3. Email Configuratie
+
+Voor automatische email rapporten:
+
+**Stap 1: Kopieer configuratie**
+```bash
+cp config/email_config.yaml.example config/email_config.yaml
+```
+
+**Stap 2: Gmail App Password**
+1. Ga naar [Google Account](https://myaccount.google.com)
+2. Schakel 2-Factor Authentication in
+3. Ga naar "App passwords" 
+4. Genereer een app password voor "Mail"
+5. Noteer dit wachtwoord
+
+**Stap 3: Omgevingsvariabelen**
+```bash
+# Voeg toe aan ~/.bashrc of ~/.zshrc
+export EMAIL_USERNAME="jouw.email@gmail.com"
+export EMAIL_PASSWORD="jouw_app_password_hier"
+
+# Herlaad shell configuratie
+source ~/.bashrc
+```
+
+**Stap 4: Configuratie aanpassen**
+Bewerk `config/email_config.yaml`:
+- Vervang `to_email` met jouw email adres
+- Vervang `to_name` met jouw naam
+- Pas onderwerp/template aan indien gewenst
+
+**Stap 5: Testen**
+```bash
+uv run python client.py --action weekly-report --email
+```
+
+### 4. Automatisch Uitvoeren
 
 **Met cron (wekelijks op maandag om 9:00):**
 
@@ -60,8 +112,11 @@ uv run client --action experts --period month --format both
 # Bewerk crontab
 crontab -e
 
-# Voeg deze regel toe:
+# Voor alleen bestanden opslaan:
 0 9 * * 1 /path/to/ai-media-monitor-mcp/scripts/weekly_report.sh
+
+# Voor email verzending:
+0 9 * * 1 SEND_EMAIL=true /path/to/ai-media-monitor-mcp/scripts/weekly_report.sh
 ```
 
 **Met systemd timer (Ubuntu/Linux):**

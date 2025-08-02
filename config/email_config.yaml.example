@@ -1,0 +1,152 @@
+# Email Configuration voor AI Media Monitor
+# 
+# INSTRUCTIES:
+# 1. Kopieer dit bestand naar config/email_config.yaml
+# 2. Vul je eigen email gegevens in
+# 3. Voor Gmail: gebruik een App Password, niet je gewone wachtwoord
+# 4. Set omgevingsvariabelen: EMAIL_USERNAME en EMAIL_PASSWORD
+#
+# Omgevingsvariabelen instellen:
+# export EMAIL_USERNAME="jouw.email@gmail.com"
+# export EMAIL_PASSWORD="jouw_app_password"
+
+smtp:
+  # Gmail SMTP instellingen (aanbevolen)
+  server: "smtp.gmail.com"
+  port: 587
+  use_tls: true
+  
+  # Andere providers:
+  # Outlook: smtp-mail.outlook.com:587
+  # Yahoo: smtp.mail.yahoo.com:587
+  # Custom SMTP: je-eigen-smtp-server.com:587
+
+  # Email credentials (gebruik omgevingsvariabelen!)
+  username: "${EMAIL_USERNAME}"  # Je volledige email adres
+  password: "${EMAIL_PASSWORD}"  # App password voor Gmail!
+
+email:
+  # Afzender informatie
+  from_name: "AI Media Monitor"
+  from_email: "${EMAIL_USERNAME}"
+  
+  # Ontvanger - VERVANG MET JOUW EMAIL!
+  to_email: "jouw.email@example.com"  # ← VERPLICHT: Vul hier jouw email in
+  to_name: "Jouw Naam"                # ← VERPLICHT: Vul hier jouw naam in
+  
+  # Email onderwerp
+  subject: "🤖 AI Media Monitor - Wekelijks Rapport (Week {week_number})"
+  
+  # HTML template voor email body
+  html_template: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>AI Media Monitor Rapport</title>
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
+            .container {{ max-width: 800px; margin: 0 auto; background: #ffffff; }}
+            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }}
+            .header h1 {{ margin: 0; font-size: 28px; }}
+            .header p {{ margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }}
+            .content {{ padding: 30px 20px; }}
+            .summary {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #667eea; }}
+            .summary h2 {{ margin-top: 0; color: #667eea; }}
+            .summary ul {{ margin: 10px 0; }}
+            .summary li {{ margin: 8px 0; }}
+            .section {{ margin: 30px 0; }}
+            .section h2 {{ color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }}
+            .topic, .expert {{ margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+            .topic {{ background: #fff; border-left: 4px solid #3498db; }}
+            .expert {{ background: #e8f4f8; border-left: 4px solid #2c3e50; }}
+            .topic h3, .expert h3 {{ margin-top: 0; color: #2c3e50; }}
+            .topic p, .expert p {{ margin: 8px 0; }}
+            .topic ul, .expert ul {{ margin: 10px 0 10px 20px; }}
+            .topic li, .expert li {{ margin: 5px 0; }}
+            a {{ color: #3498db; text-decoration: none; }}
+            a:hover {{ text-decoration: underline; }}
+            .footer {{ background: #2c3e50; color: white; padding: 20px; text-align: center; font-size: 14px; }}
+            .footer p {{ margin: 5px 0; }}
+            .highlight {{ background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0; }}
+            .badge {{ display: inline-block; background: #667eea; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🤖 AI Media Monitor</h1>
+                <p>Wekelijks Rapport - Week {week_number} van {year}</p>
+            </div>
+            
+            <div class="content">
+                <div class="summary">
+                    <h2>📊 Samenvatting</h2>
+                    <ul>
+                        <li><strong>Trending Topics:</strong> <span class="badge">{trending_topics_count}</span></li>
+                        <li><strong>Geïdentificeerde Experts:</strong> <span class="badge">{experts_count}</span></li>
+                        <li><strong>Podcast Suggesties:</strong> <span class="badge">{suggestions_count}</span></li>
+                    </ul>
+                </div>
+                
+                {highlights_html}
+                
+                <div class="section">
+                    {trending_topics_html}
+                </div>
+                
+                <div class="section">
+                    {experts_html}
+                </div>
+                
+                <div class="section">
+                    {suggestions_html}
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p><strong>AI Media Monitor</strong> - Automatisch gegenereerd op {generation_date}</p>
+                <p>📄 Volledige rapporten beschikbaar als bijlage</p>
+                <p>🤖 Deze email is automatisch verzonden door het AI Media Monitor systeem</p>
+            </div>
+        </div>
+    </body>
+    </html>
+
+# Bijlagen configuratie
+attachments:
+  include_markdown: true    # Voeg markdown rapport toe als bijlage
+  include_json: false       # Voeg JSON data toe als bijlage (alleen voor debugging)
+  
+# Notificatie instellingen  
+notifications:
+  send_on_empty: false      # Verstuur email ook als er geen nieuwe content is
+  send_summary_only: false  # Verstuur alleen samenvatting (geen bijlagen)
+
+# ============================================================================
+# SETUP INSTRUCTIES:
+# ============================================================================
+#
+# 1. GMAIL SETUP (Aanbevolen):
+#    - Ga naar Google Account instellingen
+#    - Schakel 2-Factor Authentication in
+#    - Ga naar "App passwords" 
+#    - Genereer een app password voor "Mail"
+#    - Gebruik dit app password, NIET je gewone wachtwoord
+#
+# 2. OMGEVINGSVARIABELEN:
+#    Voeg deze toe aan je ~/.bashrc of ~/.zshrc:
+#    export EMAIL_USERNAME="jouw.email@gmail.com"
+#    export EMAIL_PASSWORD="jouw_app_password_hier"
+#
+# 3. CRON SETUP VOOR WEKELIJKSE EMAILS:
+#    crontab -e
+#    # Voeg toe: elke maandag om 9:00
+#    0 9 * * 1 SEND_EMAIL=true /pad/naar/ai-media-monitor-mcp/scripts/weekly_report.sh
+#
+# 4. TESTEN:
+#    cd /pad/naar/ai-media-monitor-mcp
+#    uv sync --extra email
+#    uv run python client.py --action weekly-report --email
+#
+# ============================================================================

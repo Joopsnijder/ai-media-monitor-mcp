@@ -15,6 +15,13 @@ from typing import Any
 
 import aiofiles
 
+try:
+    from src.ai_media_monitor.utils.email_sender import EmailSender
+    EMAIL_AVAILABLE = True
+except ImportError:
+    EMAIL_AVAILABLE = False
+    print("⚠️  Email functionaliteit niet beschikbaar. Installeer met: uv sync --extra email")
+
 
 class AIMediaMonitorClient:
     """Client for AI Media Monitor MCP server."""
@@ -215,6 +222,9 @@ async def save_report(report_data: dict, format_type: str = "both"):
     reports_dir = Path("reports")
     reports_dir.mkdir(exist_ok=True)
 
+    json_file = None
+    md_file = None
+
     if format_type in ["json", "both"]:
         json_file = reports_dir / f"{base_filename}.json"
         async with aiofiles.open(json_file, "w", encoding="utf-8") as f:
@@ -227,6 +237,40 @@ async def save_report(report_data: dict, format_type: str = "both"):
         async with aiofiles.open(md_file, "w", encoding="utf-8") as f:
             await f.write(md_content)
         print(f"📝 Markdown report saved: {md_file}")
+
+    return json_file, md_file
+
+
+async def send_email_report(report_data: dict, markdown_file: Path = None, json_file: Path = None):
+    """Send report via email if configured."""
+    if not EMAIL_AVAILABLE:
+        print("⚠️  Email functionaliteit niet beschikbaar")
+        return False
+
+    try:
+        email_sender = EmailSender()
+
+        # Validate configuration
+        if not email_sender.validate_config():
+            print("❌ Email configuratie ongeldig. Controleer config/email_config.yaml")
+            return False
+
+        # Send email
+        success = await email_sender.send_report_email(
+            report_data=report_data,
+            markdown_file=markdown_file,
+            json_file=json_file
+        )
+
+        return success
+
+    except FileNotFoundError as e:
+        print(f"❌ {e}")
+        print("💡 Kopieer config/email_config.yaml naar je eigen configuratie")
+        return False
+    except Exception as e:
+        print(f"❌ Fout bij versturen email: {e}")
+        return False
 
 
 async def main():
@@ -253,6 +297,10 @@ async def main():
         help="Period for trends/experts",
     )
     parser.add_argument("--output", help="Output file (optional)")
+    parser.add_argument("--email", action="store_true", help="Send report via email")
+    parser.add_argument(
+        "--email-only", action="store_true", help="Only send email, don't save files"
+    )
 
     args = parser.parse_args()
 
@@ -262,25 +310,43 @@ async def main():
         print("🚀 Starting AI Media Monitor Client...")
         await client.connect()
 
+        json_file = None
+        md_file = None
+        report_data = None
+
         if args.action == "weekly-report":
             report_data = await client.generate_weekly_report()
             if report_data:
-                await save_report(report_data, args.format)
+                if not args.email_only:
+                    json_file, md_file = await save_report(report_data, args.format)
 
         elif args.action == "scan":
             scan_data = await client.scan_recent_articles(args.hours)
             if scan_data:
-                await save_report(scan_data, args.format)
+                report_data = scan_data
+                if not args.email_only:
+                    json_file, md_file = await save_report(scan_data, args.format)
 
         elif args.action == "trends":
             trends_data = await client.get_trending_topics_data(args.period)
             if trends_data:
-                await save_report(trends_data, args.format)
+                report_data = trends_data
+                if not args.email_only:
+                    json_file, md_file = await save_report(trends_data, args.format)
 
         elif args.action == "experts":
             experts_data = await client.identify_experts_data(args.period)
             if experts_data:
-                await save_report(experts_data, args.format)
+                report_data = experts_data
+                if not args.email_only:
+                    json_file, md_file = await save_report(experts_data, args.format)
+
+        # Send email if requested
+        if (args.email or args.email_only) and report_data:
+            print("📧 Versturen email rapport...")
+            email_success = await send_email_report(report_data, md_file, json_file)
+            if not email_success:
+                print("⚠️  Email kon niet worden verzonden, maar rapport is wel opgeslagen")
 
         print("✅ Client finished successfully!")
 

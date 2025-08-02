@@ -1,0 +1,87 @@
+# Email Configuration voor AI Media Monitor
+# Kopieer dit bestand naar email_config.yaml en vul je eigen gegevens in
+
+smtp:
+  # Gmail SMTP instellingen (meest gebruikt)
+  server: "smtp.gmail.com"
+  port: 587
+  use_tls: true
+  
+  # Voor andere providers:
+  # Outlook: smtp-mail.outlook.com:587
+  # Yahoo: smtp.mail.yahoo.com:587
+  # Custom SMTP: je-eigen-smtp-server.com:587
+
+  # Email credentials (gebruik omgevingsvariabelen voor veiligheid)
+  username: "${EMAIL_USERNAME}"  # Je email adres
+  password: "${EMAIL_PASSWORD}"  # App password (niet je gewone wachtwoord!)
+
+email:
+  # Afzender informatie
+  from_name: "AI Media Monitor"
+  from_email: "${EMAIL_USERNAME}"
+  
+  # Ontvanger
+  to_email: "joop.snijder@example.com"  # VERVANG met jouw email adres
+  to_name: "Joop Snijder"
+  
+  # Email instellingen
+  subject: "AI Media Monitor - Wekelijks Rapport (Week {week_number})"
+  
+  # HTML template voor email body
+  html_template: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>AI Media Monitor Rapport</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .header {{ background: #2c3e50; color: white; padding: 20px; text-align: center; }}
+            .content {{ padding: 20px; }}
+            .summary {{ background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }}
+            .topic {{ margin: 20px 0; padding: 15px; border-left: 4px solid #3498db; }}
+            .expert {{ margin: 15px 0; padding: 10px; background: #e8f4f8; border-radius: 5px; }}
+            .footer {{ background: #95a5a6; color: white; padding: 10px; text-align: center; font-size: 12px; }}
+            a {{ color: #3498db; text-decoration: none; }}
+            a:hover {{ text-decoration: underline; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🤖 AI Media Monitor</h1>
+            <p>Wekelijks Rapport - Week {week_number} van {year}</p>
+        </div>
+        
+        <div class="content">
+            <div class="summary">
+                <h2>📊 Samenvatting</h2>
+                <ul>
+                    <li><strong>Trending Topics:</strong> {trending_topics_count}</li>
+                    <li><strong>Geïdentificeerde Experts:</strong> {experts_count}</li>
+                    <li><strong>Podcast Suggesties:</strong> {suggestions_count}</li>
+                </ul>
+            </div>
+            
+            {highlights_html}
+            {trending_topics_html}
+            {experts_html}
+            {suggestions_html}
+        </div>
+        
+        <div class="footer">
+            <p>Automatisch gegenereerd door AI Media Monitor op {generation_date}</p>
+            <p>📄 Volledige rapporten beschikbaar als bijlage</p>
+        </div>
+    </body>
+    </html>
+
+# Bijlagen
+attachments:
+  include_markdown: true    # Voeg markdown rapport toe als bijlage
+  include_json: false       # Voeg JSON data toe als bijlage
+  
+# Notificatie instellingen  
+notifications:
+  send_on_empty: false      # Verstuur email ook als er geen nieuwe content is
+  send_summary_only: false  # Verstuur alleen samenvatting (geen bijlagen)
