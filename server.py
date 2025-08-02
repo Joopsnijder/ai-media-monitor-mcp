@@ -3,13 +3,13 @@
 from datetime import datetime
 from typing import Any
 
-from fastmcp import Context, FastMCP
+from mcp.server.fastmcp import FastMCP
 
 from src.ai_media_monitor.core import MediaAnalyzer
 from src.ai_media_monitor.models import Article, Expert, TopicSuggestion, TrendingTopic
 
 # Initialize FastMCP server
-mcp = FastMCP("AI Media Monitor", version="1.0.0")
+mcp = FastMCP()
 
 # Initialize analyzer
 analyzer = MediaAnalyzer()
@@ -19,7 +19,7 @@ analyzer = MediaAnalyzer()
     name="scan_media_sources",
     description="Scan all configured Dutch media sources for AI-related articles",
 )
-async def scan_media_sources(ctx: Context, hours_back: int = 24) -> dict[str, Any]:
+async def scan_media_sources(hours_back: int = 24) -> dict[str, Any]:
     """Scan all media sources for recent AI articles"""
     return await analyzer.scan_media_sources(hours_back)
 
@@ -29,7 +29,6 @@ async def scan_media_sources(ctx: Context, hours_back: int = 24) -> dict[str, An
     description="Get trending AI topics in Dutch media with detailed analysis",
 )
 async def get_trending_topics(
-    ctx: Context,
     period: str = "week",
     min_mentions: int = 3,
     categories: list[str] | None = None,
@@ -116,7 +115,7 @@ async def get_trending_topics(
     name="identify_experts", description="Identify potential podcast guests based on media coverage"
 )
 async def identify_experts(
-    ctx: Context, topic: str | None = None, period: str = "month", min_quotes: int = 2
+    topic: str | None = None, period: str = "month", min_quotes: int = 2
 ) -> dict[str, list[Expert]]:
     """Find experts quoted in Dutch media about AI topics"""
     hours_map = {"week": 168, "month": 720, "quarter": 2160}
@@ -200,15 +199,15 @@ async def identify_experts(
     description="Generate podcast topic suggestions based on media trends",
 )
 async def generate_topic_suggestions(
-    ctx: Context, focus_areas: list[str] | None = None
+    focus_areas: list[str] | None = None
 ) -> dict[str, list[TopicSuggestion]]:
     """Generate actionable podcast topic suggestions"""
     # Get recent trends
-    trends = await get_trending_topics(ctx, period="week", min_mentions=2)
+    trends = await get_trending_topics(period="week", min_mentions=2)
     trending_topics = [TrendingTopic(**t) for t in trends["topics"]]
 
     # Get experts
-    experts_result = await identify_experts(ctx, period="month", min_quotes=1)
+    experts_result = await identify_experts(period="month", min_quotes=1)
     available_experts = [Expert(**e) for e in experts_result["experts"]]
 
     suggestions = []
@@ -279,7 +278,7 @@ async def generate_topic_suggestions(
     name="fetch_article",
     description="Fetch full content of a specific article, bypassing paywall if needed",
 )
-async def fetch_article(ctx: Context, url: str) -> dict[str, Any]:
+async def fetch_article(url: str) -> dict[str, Any]:
     """Fetch and analyze a specific article"""
     return await analyzer.fetch_article(url)
 
@@ -288,12 +287,12 @@ async def fetch_article(ctx: Context, url: str) -> dict[str, Any]:
     name="get_weekly_report",
     description="Generate a comprehensive weekly report for AIToday Live podcast planning",
 )
-async def get_weekly_report(ctx: Context) -> dict[str, Any]:
+async def get_weekly_report() -> dict[str, Any]:
     """Generate weekly media monitoring report"""
     # Gather all data
-    trends = await get_trending_topics(ctx, period="week")
-    experts = await identify_experts(ctx, period="week", min_quotes=1)
-    suggestions = await generate_topic_suggestions(ctx)
+    trends = await get_trending_topics(period="week")
+    experts = await identify_experts(period="week", min_quotes=1)
+    suggestions = await generate_topic_suggestions()
 
     # Create summary
     summary = {
