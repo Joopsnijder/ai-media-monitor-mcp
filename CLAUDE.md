@@ -42,10 +42,18 @@ The project is built using FastMCP and follows these patterns:
 
 ```bash
 # Run the MCP server
-python ai-media-monitor-mcp.py
+python server.py
+# OR using uv scripts
+uv run server
 
-# Test with FastMCP's built-in testing
-python -c "from ai-media-monitor-mcp import mcp; mcp.run()"
+# Linting and formatting (ALWAYS run before committing)
+uv run lint          # Check for linting errors
+uv run lint-fix      # Fix linting errors automatically  
+uv run format        # Format code with ruff
+uv run test          # Run tests
+
+# Install development dependencies
+uv sync --dev
 ```
 
 ## Configuration
@@ -54,6 +62,14 @@ python -c "from ai-media-monitor-mcp import mcp; mcp.run()"
 - Fallback configuration embedded in code for reliability
 - Rate limiting and retry logic configurable per source
 - Async session management with timeout controls
+
+## Code Quality Standards
+
+**IMPORTANT**: Always run linting and formatting before committing:
+- Use `uv run lint-fix` to automatically fix linting errors
+- Use `uv run format` to format code consistently
+- All code must pass `uv run lint` without errors
+- Follow modern Python practices (use `list[str]` instead of `List[str]`, etc.)
 
 ## Dutch Language Considerations
 
