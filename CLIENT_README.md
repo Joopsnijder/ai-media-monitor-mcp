@@ -1,0 +1,194 @@
+# AI Media Monitor MCP Client
+
+De MCP client stelt je in staat om automatisch rapporten te genereren door de AI Media Monitor MCP server aan te roepen.
+
+## Functionaliteit
+
+De client kan verschillende acties uitvoeren:
+- **Weekly Report**: Comprehensive wekelijks rapport met alle data
+- **Scan**: Scan recente artikelen
+- **Trends**: Analyseer trending topics
+- **Experts**: Identificeer potentiële podcast gasten
+
+## Installatie
+
+Zorg ervoor dat alle dependencies geïnstalleerd zijn:
+
+```bash
+uv sync
+```
+
+## Gebruik
+
+### 1. Handmatig Uitvoeren
+
+**Wekelijks rapport genereren:**
+```bash
+uv run weekly-report
+# Of expliciet:
+uv run client --action weekly-report --format both
+```
+
+**Recente artikelen scannen:**
+```bash
+uv run client --action scan --hours 48 --format markdown
+```
+
+**Trending topics analyseren:**
+```bash
+uv run client --action trends --period week --format json
+```
+
+**Experts identificeren:**
+```bash
+uv run client --action experts --period month --format both
+```
+
+### 2. Opties
+
+- `--action`: Actie om uit te voeren (`weekly-report`, `scan`, `trends`, `experts`)
+- `--format`: Output formaat (`json`, `markdown`, `both`)
+- `--hours`: Aantal uren terug te scannen (voor scan actie)
+- `--period`: Periode voor trends/experts (`day`, `week`, `month`)
+- `--output`: Specifiek output bestand (optioneel)
+
+### 3. Automatisch Uitvoeren
+
+**Met cron (wekelijks op maandag om 9:00):**
+
+```bash
+# Bewerk crontab
+crontab -e
+
+# Voeg deze regel toe:
+0 9 * * 1 /path/to/ai-media-monitor-mcp/scripts/weekly_report.sh
+```
+
+**Met systemd timer (Ubuntu/Linux):**
+
+1. Maak een service bestand:
+```bash
+sudo nano /etc/systemd/system/ai-media-report.service
+```
+
+```ini
+[Unit]
+Description=AI Media Monitor Weekly Report
+After=network.target
+
+[Service]
+Type=oneshot
+User=your_username
+WorkingDirectory=/path/to/ai-media-monitor-mcp
+ExecStart=/path/to/ai-media-monitor-mcp/scripts/weekly_report.sh
+```
+
+2. Maak een timer bestand:
+```bash
+sudo nano /etc/systemd/system/ai-media-report.timer
+```
+
+```ini
+[Unit]
+Description=Run AI Media Report weekly
+Requires=ai-media-report.service
+
+[Timer]
+OnCalendar=Mon *-*-* 09:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+3. Activeer de timer:
+```bash
+sudo systemctl enable ai-media-report.timer
+sudo systemctl start ai-media-report.timer
+```
+
+## Output
+
+### Bestandslocaties
+
+Rapporten worden opgeslagen in de `reports/` directory:
+- JSON: `ai_media_report_YYYYMMDD_HHMMSS.json`
+- Markdown: `ai_media_report_YYYYMMDD_HHMMSS.md`
+
+Logs worden opgeslagen in de `logs/` directory (bij gebruik van shell script).
+
+### Rapport Inhoud
+
+Een wekelijks rapport bevat:
+
+1. **Summary Statistics**
+   - Aantal trending topics
+   - Aantal geïdentificeerde experts
+   - Aantal topic suggesties
+
+2. **Highlights**
+   - Top trending topic met details
+   - Meest geciteerde expert
+
+3. **Trending Topics** (top 5)
+   - Topic naam en aantal vermeldingen
+   - Sentiment analyse
+   - Key artikelen met bronnen
+
+4. **Expert Recommendations** (top 5)
+   - Naam en organisatie
+   - Expertise gebieden
+   - Contact informatie
+
+5. **Podcast Topic Suggestions** (top 5)
+   - Relevantie score
+   - Unieke invalshoek
+   - Voorgestelde vragen
+
+## Troubleshooting
+
+**Client kan geen verbinding maken:**
+- Zorg ervoor dat de MCP server werkt: `uv run server`
+- Check of alle dependencies geïnstalleerd zijn: `uv sync`
+
+**Lege rapporten:**
+- Verhoog de scan periode: `--hours 72` of `--period month`
+- Check de RSS feeds in de configuratie
+
+**Permission errors:**
+- Zorg ervoor dat scripts uitvoerbaar zijn: `chmod +x scripts/*.sh`
+- Check directory permissions voor `reports/` en `logs/`
+
+## Voorbeelden
+
+**Dagelijkse scan voor podcast voorbereiding:**
+```bash
+# Scan laatste 24 uur, markdown output
+uv run client --action scan --hours 24 --format markdown
+
+# Check trending topics van afgelopen week
+uv run client --action trends --period week --format both
+```
+
+**Maandelijkse expert review:**
+```bash
+# Identificeer experts van afgelopen maand
+uv run client --action experts --period month --format json
+```
+
+**Volledige wekelijkse analyse:**
+```bash
+# Genereer compleet rapport
+uv run weekly-report
+```
+
+## Integratie
+
+De client kan geïntegreerd worden met:
+- **Email**: Stuur rapporten automatisch via mail
+- **Slack/Teams**: Post rapporten in kanalen
+- **Cloud Storage**: Upload naar Google Drive/Dropbox
+- **CMS**: Automatisch publiceren op websites
+- **Analytics**: Integratie met tracking tools
+
+Zie `scripts/weekly_report.sh` voor voorbeelden van uitbreidingen.
