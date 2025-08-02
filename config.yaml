@@ -71,3 +71,78 @@ paywall_bypass:
       priority: 4
   retry_attempts: 3
   timeout: 30
+
+ai_keywords:
+  - "\\bAI\\b"
+  - "\\bartifici[eë]le intelligentie\\b"
+  - "\\bkunstmatige intelligentie\\b"
+  - "\\bmachine learning\\b"
+  - "\\bdeep learning\\b"
+  - "\\balgoritm[e|es]\\b"
+  - "\\bChatGPT\\b"
+  - "\\bGPT\\b"
+  - "\\bLLM\\b"
+  - "\\blarge language model\\b"
+  - "\\bneural[e]? net\\w*\\b"
+  - "\\bdata scien\\w*\\b"
+  - "\\bautomatis\\w*\\b"
+
+topic_patterns:
+  "AI in de zorg":
+    - "zorg"
+    - "gezondheid"
+    - "ziekenhuis"
+    - "patient"
+    - "diagnos"
+  "AI en privacy":
+    - "privacy"
+    - "AVG"
+    - "GDPR"
+    - "persoonsgegevens"
+    - "data protection"
+  "AI in het onderwijs":
+    - "onderwijs"
+    - "school"
+    - "student"
+    - "leren"
+    - "educatie"
+  "AI en werkgelegenheid":
+    - "banen"
+    - "werkgelegenheid"
+    - "arbeidsmarkt"
+    - "werknemers"
+  "AI-wetgeving":
+    - "wetgeving"
+    - "regulering"
+    - "AI Act"
+    - "toezicht"
+    - "compliance"
+  "AI in de rechtspraak":
+    - "rechtspraak"
+    - "rechtbank"
+    - "juridisch"
+    - "advocat"
+  "Generative AI":
+    - "generat"
+    - "ChatGPT"
+    - "GPT"
+    - "LLM"
+    - "chatbot"
+  "AI-ethiek":
+    - "ethiek"
+    - "ethisch"
+    - "discriminatie"
+    - "bias"
+    - "verantwoord"
+  "AI in retail":
+    - "retail"
+    - "winkel"
+    - "e-commerce"
+    - "klant"
+    - "verkoop"
+  "AI in finance":
+    - "bank"
+    - "financi"
+    - "verzekering"
+    - "fintech"
+    - "betaal"

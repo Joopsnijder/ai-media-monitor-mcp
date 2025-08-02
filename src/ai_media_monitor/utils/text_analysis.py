@@ -2,24 +2,13 @@
 
 import re
 
+from ..core.config_loader import load_config
+
 
 def is_ai_related(text: str) -> bool:
     """Check if text contains AI-related keywords"""
-    ai_keywords = [
-        r"\bAI\b",
-        r"\bartifici[eë]le intelligentie\b",
-        r"\bkunstmatige intelligentie\b",
-        r"\bmachine learning\b",
-        r"\bdeep learning\b",
-        r"\balgoritm[e|es]\b",
-        r"\bChatGPT\b",
-        r"\bGPT\b",
-        r"\bLLM\b",
-        r"\blarge language model\b",
-        r"\bneural[e]? net\w*\b",
-        r"\bdata scien\w*\b",
-        r"\bautomatis\w*\b",
-    ]
+    config = load_config()
+    ai_keywords = config.ai_keywords
 
     text_lower = text.lower()
     return any(re.search(pattern, text_lower, re.IGNORECASE) for pattern in ai_keywords)
@@ -27,18 +16,8 @@ def is_ai_related(text: str) -> bool:
 
 def extract_ai_topics(text: str) -> list[str]:
     """Extract specific AI topics from text"""
-    topic_patterns = {
-        "AI in de zorg": [r"zorg", r"gezondheid", r"ziekenhuis", r"patient", r"diagnos"],
-        "AI en privacy": [r"privacy", r"AVG", r"GDPR", r"persoonsgegevens", r"data protection"],
-        "AI in het onderwijs": [r"onderwijs", r"school", r"student", r"leren", r"educatie"],
-        "AI en werkgelegenheid": [r"banen", r"werkgelegenheid", r"arbeidsmarkt", r"werknemers"],
-        "AI-wetgeving": [r"wetgeving", r"regulering", r"AI Act", r"toezicht", r"compliance"],
-        "AI in de rechtspraak": [r"rechtspraak", r"rechtbank", r"juridisch", r"advocat"],
-        "Generative AI": [r"generat", r"ChatGPT", r"GPT", r"LLM", r"chatbot"],
-        "AI-ethiek": [r"ethiek", r"ethisch", r"discriminatie", r"bias", r"verantwoord"],
-        "AI in retail": [r"retail", r"winkel", r"e-commerce", r"klant", r"verkoop"],
-        "AI in finance": [r"bank", r"financi", r"verzekering", r"fintech", r"betaal"],
-    }
+    config = load_config()
+    topic_patterns = config.topic_patterns
 
     found_topics = []
     text_lower = text.lower()

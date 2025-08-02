@@ -1,6 +1,5 @@
 """Configuration models."""
 
-
 from pydantic import BaseModel
 
 
@@ -23,3 +22,5 @@ class Config(BaseModel):
     retry_attempts: int = 3
     timeout: int = 30
     rate_limit: int = 10
+    ai_keywords: list[str] = []
+    topic_patterns: dict[str, list[str]] = {}

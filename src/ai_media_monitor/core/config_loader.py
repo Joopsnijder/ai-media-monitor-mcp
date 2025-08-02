@@ -83,6 +83,33 @@ def load_config() -> Config:
         "retry_attempts": 3,
         "timeout": 30,
         "rate_limit": 10,
+        "ai_keywords": [
+            r"\bAI\b",
+            r"\bartifici[eë]le intelligentie\b",
+            r"\bkunstmatige intelligentie\b",
+            r"\bmachine learning\b",
+            r"\bdeep learning\b",
+            r"\balgoritm[e|es]\b",
+            r"\bChatGPT\b",
+            r"\bGPT\b",
+            r"\bLLM\b",
+            r"\blarge language model\b",
+            r"\bneural[e]? net\w*\b",
+            r"\bdata scien\w*\b",
+            r"\bautomatis\w*\b",
+        ],
+        "topic_patterns": {
+            "AI in de zorg": ["zorg", "gezondheid", "ziekenhuis", "patient", "diagnos"],
+            "AI en privacy": ["privacy", "AVG", "GDPR", "persoonsgegevens", "data protection"],
+            "AI in het onderwijs": ["onderwijs", "school", "student", "leren", "educatie"],
+            "AI en werkgelegenheid": ["banen", "werkgelegenheid", "arbeidsmarkt", "werknemers"],
+            "AI-wetgeving": ["wetgeving", "regulering", "AI Act", "toezicht", "compliance"],
+            "AI in de rechtspraak": ["rechtspraak", "rechtbank", "juridisch", "advocat"],
+            "Generative AI": ["generat", "ChatGPT", "GPT", "LLM", "chatbot"],
+            "AI-ethiek": ["ethiek", "ethisch", "discriminatie", "bias", "verantwoord"],
+            "AI in retail": ["retail", "winkel", "e-commerce", "klant", "verkoop"],
+            "AI in finance": ["bank", "financi", "verzekering", "fintech", "betaal"],
+        },
     }
 
     # Try to load from config.yaml if it exists
