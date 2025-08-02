@@ -1,6 +1,5 @@
 """Topic-related data models."""
 
-
 from pydantic import BaseModel
 
 from .article import Article

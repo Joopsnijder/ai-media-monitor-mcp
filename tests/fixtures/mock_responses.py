@@ -71,9 +71,9 @@ MOCK_ARTICLE_RESPONSES: dict[str, dict[str, Any]] = {
         <p class="byline">Door Tech Redactie</p>
         <div class="content">
             <p>Nederlandse ziekenhuizen omarmen kunstmatige intelligentie.</p>
-            <p>"AI stelt ons in staat om preciezere diagnoses te stellen," 
+            <p>"AI stelt ons in staat om preciezere diagnoses te stellen,"
                zegt Prof. Dr. Marie van der Berg van het Erasmus MC.</p>
-            <p>Het LUMC gebruikt AI voor risico-inschatting. Dr. Jan Pieterse 
+            <p>Het LUMC gebruikt AI voor risico-inschatting. Dr. Jan Pieterse
                legt uit: "We kunnen eerder ingrijpen bij problemen."</p>
         </div>
     </article>

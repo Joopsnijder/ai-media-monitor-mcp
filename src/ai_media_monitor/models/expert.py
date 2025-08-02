@@ -1,6 +1,5 @@
 """Expert data model."""
 
-
 from pydantic import BaseModel
 
 from .article import Article

@@ -46,23 +46,23 @@ SAMPLE_ARTICLES = {
         "source": "NRC",
         "date": datetime(2024, 1, 1, 10, 0),
         "content": """
-Nederlandse ziekenhuizen omarmen kunstmatige intelligentie in een ongekend tempo. 
-Het Erasmus MC in Rotterdam gebruikt AI-systemen voor het analyseren van medische beelden, 
+Nederlandse ziekenhuizen omarmen kunstmatige intelligentie in een ongekend tempo.
+Het Erasmus MC in Rotterdam gebruikt AI-systemen voor het analyseren van medische beelden,
 terwijl het AMC in Amsterdam experimenten met AI-gestuurde medicijntoediening.
 
-"AI stelt ons in staat om veel preciezere diagnoses te stellen," zegt Prof. Dr. Marie van der Berg, 
-hoofd radiologie bij het Erasmus MC. "We kunnen nu patronen herkennen die voor het menselijk oog 
+"AI stelt ons in staat om veel preciezere diagnoses te stellen," zegt Prof. Dr. Marie van der Berg,
+hoofd radiologie bij het Erasmus MC. "We kunnen nu patronen herkennen die voor het menselijk oog
 onzichtbaar zijn."
 
-Het LUMC in Leiden heeft recent een AI-systeem geïmplementeerd dat helpt bij het voorspellen 
-van patiëntuitkomsten. Dr. Jan Pieterse, cardioloog bij het LUMC, legt uit: "Deze technologie 
+Het LUMC in Leiden heeft recent een AI-systeem geïmplementeerd dat helpt bij het voorspellen
+van patiëntuitkomsten. Dr. Jan Pieterse, cardioloog bij het LUMC, legt uit: "Deze technologie
 stelt ons in staat om veel eerder in te grijpen bij risicovolle situaties."
 
-De Nederlandse AI-coalitie voor de zorg, opgericht in 2023, telt inmiddels 45 ziekenhuizen 
+De Nederlandse AI-coalitie voor de zorg, opgericht in 2023, telt inmiddels 45 ziekenhuizen
 als lid. Het doel is om kennis te delen en ethische richtlijnen te ontwikkelen voor AI in de zorg.
 
-Echter, niet iedereen is even enthousiast. Privacy-expert Dr. Lisa Janssen van de Universiteit 
-van Amsterdam waarschuwt: "We moeten ervoor zorgen dat de privacy van patiënten gewaarborgd blijft 
+Echter, niet iedereen is even enthousiast. Privacy-expert Dr. Lisa Janssen van de Universiteit
+van Amsterdam waarschuwt: "We moeten ervoor zorgen dat de privacy van patiënten gewaarborgd blijft
 bij deze nieuwe ontwikkelingen."
         """.strip(),
         "summary": "Ziekenhuizen in Nederland maken steeds meer gebruik van AI-technologie voor diagnoses en behandelingen.",
@@ -89,19 +89,19 @@ bij deze nieuwe ontwikkelingen."
         "source": "NRC",
         "date": datetime(2024, 1, 1, 9, 30),
         "content": """
-Onderwijsinstellingen in Nederland worstelen met privacy-vraagstukken rond het gebruik van 
-AI-tools zoals ChatGPT. Verschillende universiteiten hebben richtlijnen opgesteld, maar 
+Onderwijsinstellingen in Nederland worstelen met privacy-vraagstukken rond het gebruik van
+AI-tools zoals ChatGPT. Verschillende universiteiten hebben richtlijnen opgesteld, maar
 een landelijke aanpak ontbreekt nog.
 
-De Autoriteit Persoonsgegevens (AP) heeft vorige maand waarschuwingen uitgegeven over 
-het gebruik van AI-chatbots in het onderwijs. "Studentengegevens mogen niet zomaar 
+De Autoriteit Persoonsgegevens (AP) heeft vorige maand waarschuwingen uitgegeven over
+het gebruik van AI-chatbots in het onderwijs. "Studentengegevens mogen niet zomaar
 worden gedeeld met Amerikaanse techbedrijven," aldus AP-voorzitter Aleid Wolfsen.
 
-Professor AI-ethiek Sarah de Wit van de TU Delft pleit voor een genuanceerde benadering: 
-"We moeten de voordelen van AI in het onderwijs niet wegwuiven vanwege privacy-zorgen, 
+Professor AI-ethiek Sarah de Wit van de TU Delft pleit voor een genuanceerde benadering:
+"We moeten de voordelen van AI in het onderwijs niet wegwuiven vanwege privacy-zorgen,
 maar wel zorgvuldige afwegingen maken."
 
-Het ministerie van Onderwijs werkt samen met universiteiten aan een landelijk kader 
+Het ministerie van Onderwijs werkt samen met universiteiten aan een landelijk kader
 voor AI-gebruik in het onderwijs. Dit moet eind 2024 gereed zijn.
         """.strip(),
         "summary": "Scholen worstelen met privacy-vragen bij het gebruik van AI-tools zoals ChatGPT.",
@@ -124,20 +124,20 @@ voor AI-gebruik in het onderwijs. Dit moet eind 2024 gereed zijn.
         "source": "de Volkskrant",
         "date": datetime(2024, 1, 1, 11, 15),
         "content": """
-Een groot onderzoek van de Universiteit Utrecht toont aan dat AI-systemen die worden 
-gebruikt voor personeelsselectie nog steeds discrimineren op basis van geslacht, 
+Een groot onderzoek van de Universiteit Utrecht toont aan dat AI-systemen die worden
+gebruikt voor personeelsselectie nog steeds discrimineren op basis van geslacht,
 etniciteit en leeftijd.
 
-Het onderzoek, geleid door Dr. Ahmed Hassan, analyseerde 50 verschillende AI-systemen 
-die door Nederlandse bedrijven worden gebruikt. "We zien systematische vooroordelen 
+Het onderzoek, geleid door Dr. Ahmed Hassan, analyseerde 50 verschillende AI-systemen
+die door Nederlandse bedrijven worden gebruikt. "We zien systematische vooroordelen
 die vaak sterker zijn dan bij menselijke recruiters," concludeert Hassan.
 
-Mensenrechtenorganisatie Amnesty International roept op tot strengere regulering. 
-Woordvoerder Dagmar Oudshoorn stelt: "Bedrijven gebruiken AI om objectiever te zijn, 
+Mensenrechtenorganisatie Amnesty International roept op tot strengere regulering.
+Woordvoerder Dagmar Oudshoorn stelt: "Bedrijven gebruiken AI om objectiever te zijn,
 maar het tegenovergestelde gebeurt."
 
-De Tweede Kamer behandelt binnenkort een motie voor scherpere toezicht op AI in 
-de werving en selectie. VVD-Kamerlid Sophie Hermans is voorstander: "We kunnen niet 
+De Tweede Kamer behandelt binnenkort een motie voor scherpere toezicht op AI in
+de werving en selectie. VVD-Kamerlid Sophie Hermans is voorstander: "We kunnen niet
 toestaan dat AI discriminatie institutionaliseert."
         """.strip(),
         "summary": "Onderzoek toont aan dat AI-systemen voor personeelsselectie vooroordelen kunnen versterken.",

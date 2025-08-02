@@ -257,8 +257,7 @@ async def generate_topic_suggestions(
             topic=trend.topic,
             relevance_score=relevance_score,
             reason=(
-                f"{trend.mentions} artikelen deze week, "
-                f"{len(topic_experts)} beschikbare experts"
+                f"{trend.mentions} artikelen deze week, {len(topic_experts)} beschikbare experts"
             ),
             potential_guests=topic_experts[:3],
             unique_angle=trend.suggested_angle or f"Praktijkervaringen met {trend.topic}",
