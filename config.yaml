@@ -1,0 +1,73 @@
+media_sources:
+  newspapers:
+    - name: "NRC"
+      url: "https://www.nrc.nl"
+      rss: "https://www.nrc.nl/rss/"
+      categories: ["tech", "economie"]
+    - name: "Volkskrant"
+      url: "https://www.volkskrant.nl"
+      rss: "https://www.volkskrant.nl/voorpagina/rss.xml"
+    - name: "FD"
+      url: "https://fd.nl"
+      rss: "https://fd.nl/rss"
+    - name: "Telegraaf"
+      url: "https://www.telegraaf.nl"
+      rss: "https://www.telegraaf.nl/rss"
+    - name: "AD"
+      url: "https://www.ad.nl"
+      rss: "https://www.ad.nl/tech/rss.xml"
+    - name: "Trouw"
+      url: "https://www.trouw.nl"
+      rss: "https://www.trouw.nl/cs-b7d0a82a.xml"
+  
+  trade_publications:
+    - name: "Computable"
+      url: "https://www.computable.nl"
+      rss: "https://www.computable.nl/rss/nieuws.xml"
+    - name: "AG Connect"
+      url: "https://www.agconnect.nl"
+    - name: "MT/Sprout"
+      url: "https://www.mt.nl"
+      rss: "https://www.mt.nl/feed"
+    - name: "Emerce"
+      url: "https://www.emerce.nl"
+      rss: "https://www.emerce.nl/feed"
+  
+  tech_media:
+    - name: "Tweakers"
+      url: "https://tweakers.net"
+      rss: "https://feeds.feedburner.com/tweakers/mixed"
+    - name: "Bright"
+      url: "https://www.bright.nl"
+      rss: "https://www.bright.nl/rss"
+    - name: "Dutch IT Channel"
+      url: "https://dutchitchannel.nl"
+      rss: "https://dutchitchannel.nl/feed"
+  
+  news_sites:
+    - name: "NU.nl"
+      url: "https://www.nu.nl"
+      rss: "https://www.nu.nl/rss/Tech"
+    - name: "RTL Nieuws"
+      url: "https://www.rtlnieuws.nl"
+      rss: "https://www.rtlnieuws.nl/rss.xml"
+    - name: "NOS"
+      url: "https://nos.nl"
+      rss: "https://feeds.nos.nl/nosnieuwstech"
+
+paywall_bypass:
+  services:
+    - url: "https://archive.ph"
+      method: "POST"
+      priority: 1
+    - url: "https://1ft.io"
+      method: "GET"
+      priority: 2
+    - url: "https://12ft.io"
+      method: "GET"
+      priority: 3
+    - url: "https://web.archive.org"
+      method: "GET"
+      priority: 4
+  retry_attempts: 3
+  timeout: 30
