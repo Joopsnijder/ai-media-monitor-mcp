@@ -4,9 +4,7 @@ import asyncio
 
 import aiohttp
 
-from ..core.config_loader import load_config
-
-config = load_config()
+# Import moved inside functions to avoid circular import
 
 
 async def fetch_with_retry(
@@ -27,6 +25,9 @@ async def fetch_with_retry(
 
 async def bypass_paywall(session: aiohttp.ClientSession, url: str) -> str | None:
     """Try to bypass paywall using configured services"""
+    from ..core.config_loader import load_config
+
+    config = load_config()
     for service in sorted(config.paywall_services, key=lambda x: x.priority):
         try:
             if service.url == "https://archive.ph":
