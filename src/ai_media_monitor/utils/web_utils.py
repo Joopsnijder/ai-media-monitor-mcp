@@ -28,30 +28,31 @@ async def bypass_paywall(session: aiohttp.ClientSession, url: str) -> str | None
     from ..core.config_loader import load_config
 
     config = load_config()
-    for service in sorted(config.paywall_services, key=lambda x: x.priority):
+    for service in sorted(config.paywall_services, key=lambda x: x.get("priority", 1)):
         try:
-            if service.url == "https://archive.ph":
+            service_url = service.get("url", "")
+            if service_url == "https://archive.ph":
                 # Archive.ph requires special handling
                 async with session.post(
-                    f"{service.url}/submit/", data={"url": url}, allow_redirects=False
+                    f"{service_url}/submit/", data={"url": url}, allow_redirects=False
                 ) as response:
                     if response.status in [302, 301]:
                         archive_url = response.headers.get("Location")
                         if archive_url:
                             return await fetch_with_retry(session, archive_url)
 
-            elif service.url == "https://web.archive.org/save":
+            elif service_url == "https://web.archive.org/save":
                 # Wayback Machine
                 archive_url = f"https://web.archive.org/web/{url}"
                 return await fetch_with_retry(session, archive_url)
 
             else:
                 # Generic GET services like 12ft.io, 1ft.io
-                bypass_url = f"{service.url}/{url}"
+                bypass_url = f"{service_url}/{url}"
                 return await fetch_with_retry(session, bypass_url)
 
         except Exception as e:
-            print(f"Paywall bypass failed with {service.url}: {e}")
+            print(f"Paywall bypass failed with {service_url}: {e}")
             continue
 
     return None

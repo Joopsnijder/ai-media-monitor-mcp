@@ -17,8 +17,8 @@ class PaywallService(BaseModel):
 
 
 class Config(BaseModel):
-    media_sources: dict[str, list[MediaSource]]
-    paywall_services: list[PaywallService]
+    media_sources: dict[str, list[dict]]
+    paywall_services: list[dict]
     retry_attempts: int = 3
     timeout: int = 30
     rate_limit: int = 10
