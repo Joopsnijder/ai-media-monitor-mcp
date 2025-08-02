@@ -32,7 +32,7 @@ async def get_trending_topics(
     period: str = "week",
     min_mentions: int = 3,
     categories: list[str] | None = None,
-) -> dict[str, list[TrendingTopic]]:
+) -> dict[str, Any]:
     """Analyze trending AI topics in Dutch media"""
     # Determine time period
     hours_map = {"day": 24, "week": 168, "month": 720}
@@ -116,7 +116,7 @@ async def get_trending_topics(
 )
 async def identify_experts(
     topic: str | None = None, period: str = "month", min_quotes: int = 2
-) -> dict[str, list[Expert]]:
+) -> dict[str, Any]:
     """Find experts quoted in Dutch media about AI topics"""
     hours_map = {"week": 168, "month": 720, "quarter": 2160}
     hours = hours_map.get(period, 720)
@@ -200,7 +200,7 @@ async def identify_experts(
 )
 async def generate_topic_suggestions(
     focus_areas: list[str] | None = None
-) -> dict[str, list[TopicSuggestion]]:
+) -> dict[str, Any]:
     """Generate actionable podcast topic suggestions"""
     # Get recent trends
     trends = await get_trending_topics(period="week", min_mentions=2)
