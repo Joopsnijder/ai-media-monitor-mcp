@@ -1,29 +1,28 @@
 # Email Configuration voor AI Media Monitor
-# Kopieer dit bestand naar email_config.yaml en vul je eigen gegevens in
+# 
+# Configuratie via .env bestand:
+# 1. Kopieer .env.example naar .env
+# 2. Vul je email gegevens in het .env bestand
+# 3. Dit bestand gebruikt automatisch die variabelen
 
 smtp:
   # Gmail SMTP instellingen (meest gebruikt)
-  server: "smtp.gmail.com"
-  port: 587
-  use_tls: true
+  server: "${EMAIL_SMTP_SERVER}"
+  port: "${EMAIL_SMTP_PORT}"
+  use_tls: "${EMAIL_USE_TLS}"
   
-  # Voor andere providers:
-  # Outlook: smtp-mail.outlook.com:587
-  # Yahoo: smtp.mail.yahoo.com:587
-  # Custom SMTP: je-eigen-smtp-server.com:587
-
-  # Email credentials (gebruik omgevingsvariabelen voor veiligheid)
-  username: "${EMAIL_USERNAME}"  # Je email adres
-  password: "${EMAIL_PASSWORD}"  # App password (niet je gewone wachtwoord!)
+  # Email credentials (automatisch uit .env bestand)
+  username: "${EMAIL_USERNAME}"
+  password: "${EMAIL_PASSWORD}"
 
 email:
-  # Afzender informatie
-  from_name: "AI Media Monitor"
+  # Afzender informatie (automatisch uit .env bestand)
+  from_name: "${EMAIL_FROM_NAME}"
   from_email: "${EMAIL_USERNAME}"
   
-  # Ontvanger
-  to_email: "joop.snijder@example.com"  # VERVANG met jouw email adres
-  to_name: "Joop Snijder"
+  # Ontvanger (automatisch uit .env bestand)
+  to_email: "${EMAIL_TO_ADDRESS}"
+  to_name: "${EMAIL_TO_NAME}"
   
   # Email instellingen
   subject: "AI Media Monitor - Wekelijks Rapport (Week {week_number})"

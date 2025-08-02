@@ -71,9 +71,10 @@ uv run client --action weekly-report --email-only
 
 Voor automatische email rapporten:
 
-**Stap 1: Kopieer configuratie**
+**Stap 1: Maak .env bestand**
 ```bash
-cp config/email_config.yaml.example config/email_config.yaml
+# Kopieer het voorbeeld bestand
+cp .env.example .env
 ```
 
 **Stap 2: Gmail App Password**
@@ -81,28 +82,27 @@ cp config/email_config.yaml.example config/email_config.yaml
 2. Schakel 2-Factor Authentication in
 3. Ga naar "App passwords" 
 4. Genereer een app password voor "Mail"
-5. Noteer dit wachtwoord
+5. Kopieer het gegenereerde wachtwoord
 
-**Stap 3: Omgevingsvariabelen**
+**Stap 3: Bewerk .env bestand**
 ```bash
-# Voeg toe aan ~/.bashrc of ~/.zshrc
-export EMAIL_USERNAME="jouw.email@gmail.com"
-export EMAIL_PASSWORD="jouw_app_password_hier"
-
-# Herlaad shell configuratie
-source ~/.bashrc
+# Bewerk .env en vul in:
+EMAIL_USERNAME=jouw.email@gmail.com
+EMAIL_PASSWORD=jouw_app_password_hier
+EMAIL_TO_ADDRESS=jouw.email@gmail.com
+EMAIL_TO_NAME=Jouw Naam
 ```
 
-**Stap 4: Configuratie aanpassen**
-Bewerk `config/email_config.yaml`:
-- Vervang `to_email` met jouw email adres
-- Vervang `to_name` met jouw naam
-- Pas onderwerp/template aan indien gewenst
-
-**Stap 5: Testen**
+**Stap 4: Testen**
 ```bash
 uv run python client.py --action weekly-report --email
 ```
+
+**Voordelen van .env bestand:**
+- ✅ Veiliger (niet in git)
+- ✅ Eenvoudiger configuratie
+- ✅ Automatische defaults voor SMTP
+- ✅ Geen shell exports nodig
 
 ### 4. Automatisch Uitvoeren
 

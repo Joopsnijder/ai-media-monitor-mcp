@@ -1,4 +1,7 @@
-"""Email functionality for AI Media Monitor reports."""
+"""Email functionality for AI Media Monitor reports.
+
+This module is kept separate from other utils to avoid circular imports.
+"""
 
 import os
 import smtplib
@@ -10,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import load_dotenv
 
 
 class EmailSender:
@@ -17,6 +21,9 @@ class EmailSender:
 
     def __init__(self, config_path: str = "config/email_config.yaml"):
         """Initialize email sender with configuration."""
+        # Load .env file first
+        load_dotenv()
+        
         self.config_path = config_path
         self.config = self._load_config()
 
@@ -46,7 +53,27 @@ class EmailSender:
             return [self._replace_env_vars(item) for item in obj]
         elif isinstance(obj, str) and obj.startswith("${") and obj.endswith("}"):
             env_var = obj[2:-1]
-            return os.getenv(env_var, obj)  # Return original if env var not found
+            
+            # Get environment variable with sensible defaults
+            defaults = {
+                "EMAIL_SMTP_SERVER": "smtp.gmail.com",
+                "EMAIL_SMTP_PORT": "587",
+                "EMAIL_USE_TLS": "true",
+                "EMAIL_FROM_NAME": "AI Media Monitor"
+            }
+            
+            value = os.getenv(env_var, defaults.get(env_var, obj))
+            
+            # Convert port to int and use_tls to boolean
+            if env_var == "EMAIL_SMTP_PORT":
+                try:
+                    return int(value)
+                except (ValueError, TypeError):
+                    return 587
+            elif env_var == "EMAIL_USE_TLS":
+                return value.lower() in ("true", "1", "yes", "on")
+            
+            return value
         else:
             return obj
 

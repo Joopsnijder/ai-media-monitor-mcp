@@ -10,12 +10,6 @@ import feedparser
 from bs4 import BeautifulSoup
 
 from ..models import Article, MediaSource
-from ..utils import (
-    extract_ai_topics,
-    extract_quotes_and_experts,
-    fetch_article_content,
-    is_ai_related,
-)
 from .config_loader import load_config
 
 
@@ -30,6 +24,10 @@ class MediaAnalyzer:
     ) -> Article | None:
         """Parse RSS item into Article object"""
         try:
+            # Delayed imports to avoid circular dependencies
+            from ..utils.text_analysis import is_ai_related, extract_ai_topics, extract_quotes_and_experts
+            from ..utils.web_utils import fetch_article_content
+            
             # Extract basic info
             title = item.get("title", "")
             url = item.get("link", "")
@@ -167,6 +165,10 @@ class MediaAnalyzer:
 
     async def fetch_article(self, url: str) -> dict[str, Any]:
         """Fetch and analyze a specific article"""
+        # Delayed imports to avoid circular dependencies
+        from ..utils.text_analysis import is_ai_related, extract_ai_topics, extract_quotes_and_experts
+        from ..utils.web_utils import fetch_article_content
+        
         async with aiohttp.ClientSession() as session:
             content = await fetch_article_content(session, url)
 
