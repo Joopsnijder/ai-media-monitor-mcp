@@ -144,18 +144,61 @@ uv run python client.py --action weekly-report --email
 
 ### 4. Automatisch Uitvoeren
 
-**Met cron (wekelijks op maandag om 9:00):**
+**Wekelijkse Cron Job Setup (Aanbevolen):**
+
+Voor automatische wekelijkse rapporten elke maandag om 9:00:
 
 ```bash
-# Bewerk crontab
+# Stap 1: Maak script uitvoerbaar
+chmod +x /Users/joopsnijder/Projects/ai-media-monitor-mcp/scripts/weekly_report.sh
+
+# Stap 2: Installeer cron job met email
+echo "# AI Media Monitor - Weekly Report (every Monday at 9:00 AM)
+0 9 * * 1 SEND_EMAIL=true /Users/joopsnijder/Projects/ai-media-monitor-mcp/scripts/weekly_report.sh" | crontab -
+
+# Stap 3: Controleer installatie
+crontab -l
+```
+
+**Test de cron job handmatig:**
+```bash
+# Test met email verzending
+SEND_EMAIL=true ./scripts/weekly_report.sh
+
+# Test zonder email (alleen bestanden)
+./scripts/weekly_report.sh
+```
+
+**Cron Job Management:**
+```bash
+# Bekijk huidige cron jobs
+crontab -l
+
+# Bewerk cron jobs handmatig
 crontab -e
 
-# Voor alleen bestanden opslaan:
-0 9 * * 1 /path/to/ai-media-monitor-mcp/scripts/weekly_report.sh
-
-# Voor email verzending:
-0 9 * * 1 SEND_EMAIL=true /path/to/ai-media-monitor-mcp/scripts/weekly_report.sh
+# Verwijder alle cron jobs (voorzichtig!)
+crontab -r
 ```
+
+**Logs controleren:**
+- Logs worden opgeslagen in `logs/weekly_report_YYYYMMDD_HHMMSS.log`
+- Check logs na uitvoering: `ls -la logs/`
+- Bekijk laatste log: `tail -f logs/weekly_report_*.log`
+
+**Wat gebeurt er elke maandag om 9:00:**
+1. 🔄 Script start automatisch via cron
+2. 📦 Dependencies worden gesynchroniseerd
+3. 🔍 Nederlandse media bronnen worden gescand voor AI-gerelateerde artikelen
+4. 📊 Trending topics en podcast suggesties worden geanalyseerd
+5. 📧 Email wordt verzonden naar geconfigureerde ontvanger
+6. 📝 Backup bestanden worden opgeslagen in `reports/` directory
+7. 📋 Uitgebreide logs worden bewaard in `logs/` directory
+
+**Verwachte resultaten:**
+- ✅ Email met HTML rapport + Markdown bijlage
+- ✅ JSON + Markdown bestanden in `reports/`
+- ✅ Succesvolle uitvoering gelogd met timestamps
 
 **Met systemd timer (Ubuntu/Linux):**
 
