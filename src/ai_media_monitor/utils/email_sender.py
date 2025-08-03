@@ -4,6 +4,7 @@ This module is kept separate from other utils to avoid circular imports.
 """
 
 import os
+import re
 import smtplib
 from datetime import datetime
 from email.mime.application import MIMEApplication
@@ -77,45 +78,129 @@ class EmailSender:
         else:
             return obj
 
-    def _generate_html_content(self, report_data: dict[str, Any]) -> str:
+    def _markdown_to_html(self, markdown_content: str) -> str:
+        """Convert markdown content to HTML for email body."""
+        # Split content into sections for better processing
+        lines = markdown_content.split('\n')
+        html_lines = []
+        in_list = False
+        
+        for line in lines:
+            line = line.strip()
+            
+            # Skip empty lines but preserve spacing
+            if not line:
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
+                html_lines.append('')
+                continue
+            
+            # Headers
+            if line.startswith('# '):
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
+                html_lines.append(f'<h1>{line[2:]}</h1>')
+            elif line.startswith('## '):
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
+                html_lines.append(f'<h2>{line[3:]}</h2>')
+            elif line.startswith('### '):
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
+                html_lines.append(f'<h3>{line[4:]}</h3>')
+            # Bullet points
+            elif line.startswith('- '):
+                if not in_list:
+                    html_lines.append('<ul>')
+                    in_list = True
+                # Process the list item content
+                list_content = line[2:]
+                # Convert bold text
+                list_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', list_content)
+                # Convert links
+                list_content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', list_content)
+                html_lines.append(f'<li>{list_content}</li>')
+            # Regular text
+            else:
+                if in_list:
+                    html_lines.append('</ul>')
+                    in_list = False
+                # Process regular text
+                processed_line = line
+                # Convert bold text
+                processed_line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', processed_line)
+                # Convert links
+                processed_line = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', processed_line)
+                html_lines.append(f'<p>{processed_line}</p>')
+        
+        # Close any remaining list
+        if in_list:
+            html_lines.append('</ul>')
+        
+        return '\n'.join(html_lines)
+
+    def _generate_html_content(self, report_data: dict[str, Any], markdown_content: str = None) -> str:
         """Generate HTML email content from report data."""
         # Get basic statistics
         stats = report_data.get('statistics', {})
         week_number = datetime.now().isocalendar()[1]
         year = datetime.now().year
 
-        # Generate highlights HTML
-        highlights_html = self._generate_highlights_html(report_data.get('highlights', {}))
+        # If markdown content is provided, use it as the main content
+        if markdown_content:
+            main_content_html = self._markdown_to_html(markdown_content)
+        else:
+            # Fallback to original template format
+            highlights_html = self._generate_highlights_html(report_data.get('highlights', {}))
+            trending_topics_html = self._generate_trending_topics_html(
+                report_data.get('trends', {}).get('topics', [])
+            )
+            experts_html = self._generate_experts_html(
+                report_data.get('experts', {}).get('experts', [])
+            )
+            suggestions_html = self._generate_suggestions_html(
+                report_data.get('suggestions', {}).get('suggestions', [])
+            )
+            main_content_html = f"{highlights_html}{trending_topics_html}{experts_html}{suggestions_html}"
 
-        # Generate trending topics HTML
-        trending_topics_html = self._generate_trending_topics_html(
-            report_data.get('trends', {}).get('topics', [])
-        )
-
-        # Generate experts HTML
-        experts_html = self._generate_experts_html(
-            report_data.get('experts', {}).get('experts', [])
-        )
-
-        # Generate suggestions HTML
-        suggestions_html = self._generate_suggestions_html(
-            report_data.get('suggestions', {}).get('suggestions', [])
-        )
-
-        # Fill template
-        html_template = self.config['email']['html_template']
-        html_content = html_template.format(
-            week_number=week_number,
-            year=year,
-            trending_topics_count=stats.get('trending_topics_count', 0),
-            experts_count=stats.get('identified_experts_count', 0),
-            suggestions_count=stats.get('topic_suggestions_count', 0),
-            generation_date=datetime.now().strftime('%d-%m-%Y %H:%M'),
-            highlights_html=highlights_html,
-            trending_topics_html=trending_topics_html,
-            experts_html=experts_html,
-            suggestions_html=suggestions_html
-        )
+        # Create HTML content with inline styling for email compatibility
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AI Media Monitor Rapport</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; background-color: #f5f5f5;">
+    <div style="background: linear-gradient(135deg, #2c3e50, #3498db); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 600;">🤖 AI Media Monitor</h1>
+        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Wekelijks Rapport - Week {week_number} van {year}</p>
+    </div>
+    
+    <div style="padding: 30px; background: #ffffff; border: 1px solid #e1e5e9; border-top: none;">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 0 0 30px 0; border-left: 4px solid #3498db;">
+            <h2 style="color: #3498db; font-size: 20px; margin: 0 0 15px 0;">📊 Samenvatting</h2>
+            <ul style="padding-left: 20px; margin: 10px 0;">
+                <li><strong>Trending Topics:</strong> {stats.get('trending_topics_count', 0)}</li>
+                <li><strong>Geïdentificeerde Experts:</strong> {stats.get('identified_experts_count', 0)}</li>
+                <li><strong>Podcast Suggesties:</strong> {stats.get('topic_suggestions_count', 0)}</li>
+            </ul>
+        </div>
+        
+        <div style="color: #333;">
+            {main_content_html}
+        </div>
+    </div>
+    
+    <div style="background: #95a5a6; color: white; padding: 20px; text-align: center; font-size: 14px; border-radius: 0 0 8px 8px;">
+        <p style="margin: 5px 0;">Automatisch gegenereerd door AI Media Monitor op {datetime.now().strftime('%d-%m-%Y %H:%M')}</p>
+        <p style="margin: 5px 0;">🔗 Voor AIToday Live podcast planning</p>
+    </div>
+</body>
+</html>"""
 
         return html_content
 
@@ -254,8 +339,14 @@ class EmailSender:
             msg['From'] = f"{self.config['email']['from_name']} <{self.config['email']['from_email']}>"
             msg['To'] = f"{self.config['email']['to_name']} <{self.config['email']['to_email']}>"
 
-            # Generate HTML content
-            html_content = self._generate_html_content(report_data)
+            # Read markdown content if available
+            markdown_content = None
+            if markdown_file and markdown_file.exists():
+                with open(markdown_file, 'r', encoding='utf-8') as f:
+                    markdown_content = f.read()
+
+            # Generate HTML content with markdown integration
+            html_content = self._generate_html_content(report_data, markdown_content)
 
             # Add HTML part
             html_part = MIMEText(html_content, 'html', 'utf-8')

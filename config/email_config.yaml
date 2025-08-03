@@ -77,7 +77,7 @@ email:
 
 # Bijlagen
 attachments:
-  include_markdown: true    # Voeg markdown rapport toe als bijlage
+  include_markdown: false   # Markdown content wordt nu direct in email getoond
   include_json: false       # Voeg JSON data toe als bijlage
   
 # Notificatie instellingen  
