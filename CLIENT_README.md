@@ -77,26 +77,64 @@ Voor automatische email rapporten:
 cp .env.example .env
 ```
 
-**Stap 2: Gmail App Password**
-1. Ga naar [Google Account](https://myaccount.google.com)
-2. Schakel 2-Factor Authentication in
-3. Ga naar "App passwords" 
-4. Genereer een app password voor "Mail"
-5. Kopieer het gegenereerde wachtwoord
+**Stap 2: Gmail App Password instellen**
+
+⚠️ **Belangrijk**: Je hebt een speciaal Gmail App Password nodig, niet je normale wachtwoord!
+
+1. **Ga naar je Google Account**: https://myaccount.google.com
+2. **Klik op "Security"** (of "Beveiliging" in Nederlands)
+3. **Schakel 2-Factor Authentication in** (als nog niet gedaan):
+   - Zoek naar "2-Step Verification" / "Verificatie in 2 stappen"
+   - Volg de instructies om 2FA in te schakelen
+4. **Genereer App Password**:
+   - Ga terug naar Security pagina
+   - Klik op "2-Step Verification" / "Verificatie in 2 stappen"
+   - Scroll helemaal naar beneden naar "App passwords" / "App-wachtwoorden"
+   - Als je dit niet ziet, ga direct naar: https://myaccount.google.com/apppasswords
+5. **Maak nieuw App Password**:
+   - Select app: "Mail"
+   - Select device: "Other (Custom name)" → Type: "AI Media Monitor"
+   - Klik "Generate" / "Genereren"
+6. **Kopieer het App Password**:
+   - Je krijgt een 16-karakter code (bijv: `abcd efgh ijkl mnop`)
+   - **Kopieer deze code exact inclusief spaties**
 
 **Stap 3: Bewerk .env bestand**
 ```bash
-# Bewerk .env en vul in:
+# Bewerk .env en vul in met je echte gegevens:
 EMAIL_USERNAME=jouw.email@gmail.com
-EMAIL_PASSWORD=jouw_app_password_hier
-EMAIL_TO_ADDRESS=jouw.email@gmail.com
-EMAIL_TO_NAME=Jouw Naam
+EMAIL_PASSWORD=het_app_password_van_stap_2
+EMAIL_TO_ADDRESS=ontvanger@example.com  
+EMAIL_TO_NAME=Ontvanger Naam
 ```
 
-**Stap 4: Testen**
+**Voorbeeld van correct ingevuld .env bestand:**
 ```bash
+EMAIL_USERNAME=john.doe@gmail.com
+EMAIL_PASSWORD=abcd efgh ijkl mnop
+EMAIL_TO_ADDRESS=john.doe@company.com
+EMAIL_TO_NAME=John Doe
+```
+
+**Stap 4: Test de configuratie**
+```bash
+# Test alleen email (geen bestanden opslaan)
+uv run python client.py --action weekly-report --email-only
+
+# Test volledig (bestanden + email)
 uv run python client.py --action weekly-report --email
 ```
+
+**✅ Succesvol als je ziet:**
+```
+✅ Email configuratie is geldig
+✅ Email verzonden naar [jouw-email]
+```
+
+**❌ Foutmeldingen oplossen:**
+- `Username and Password not accepted` → Gebruik App Password, niet normaal wachtwoord
+- `2-Step Verification required` → Schakel 2FA in op je Google account
+- `App passwords not available` → Controleer of je een persoonlijk Gmail account gebruikt (geen G Suite/Workspace)
 
 **Voordelen van .env bestand:**
 - ✅ Veiliger (niet in git)
