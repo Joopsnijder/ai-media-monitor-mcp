@@ -144,6 +144,19 @@ uv run python client.py --action weekly-report --email
 
 ### 4. Automatisch Uitvoeren
 
+**Dagelijkse Artikel Verzameling (Nieuwe Functie):**
+
+Voor betere weekly reports worden dagelijks artikelen opgeslagen in database:
+
+```bash
+# Stap 1: Maak script uitvoerbaar
+chmod +x /Users/joopsnijder/Projects/ai-media-monitor-mcp/scripts/daily_collection.sh
+
+# Stap 2: Installeer dagelijkse cron job (6:00 AM)
+echo "# AI Media Monitor - Daily Collection (every day at 6:00 AM)
+0 6 * * * /Users/joopsnijder/Projects/ai-media-monitor-mcp/scripts/daily_collection.sh" | crontab -
+```
+
 **Wekelijkse Cron Job Setup (Aanbevolen):**
 
 Voor automatische wekelijkse rapporten elke maandag om 9:00:
@@ -152,9 +165,10 @@ Voor automatische wekelijkse rapporten elke maandag om 9:00:
 # Stap 1: Maak script uitvoerbaar
 chmod +x /Users/joopsnijder/Projects/ai-media-monitor-mcp/scripts/weekly_report.sh
 
-# Stap 2: Installeer cron job met email
+# Stap 2: Installeer wekelijkse cron job met email
 echo "# AI Media Monitor - Weekly Report (every Monday at 9:00 AM)
-0 9 * * 1 SEND_EMAIL=true /Users/joopsnijder/Projects/ai-media-monitor-mcp/scripts/weekly_report.sh" | crontab -
+0 9 * * 1 SEND_EMAIL=true /Users/joopsnijder/Projects/ai-media-monitor-mcp/scripts/weekly_report.sh" | cron_temp
+crontab cron_temp && rm cron_temp
 
 # Stap 3: Controleer installatie
 crontab -l

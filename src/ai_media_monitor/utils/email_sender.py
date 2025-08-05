@@ -24,7 +24,7 @@ class EmailSender:
         """Initialize email sender with configuration."""
         # Load .env file first
         load_dotenv()
-        
+
         self.config_path = config_path
         self.config = self._load_config()
 
@@ -54,7 +54,7 @@ class EmailSender:
             return [self._replace_env_vars(item) for item in obj]
         elif isinstance(obj, str) and obj.startswith("${") and obj.endswith("}"):
             env_var = obj[2:-1]
-            
+
             # Get environment variable with sensible defaults
             defaults = {
                 "EMAIL_SMTP_SERVER": "smtp.gmail.com",
@@ -62,9 +62,9 @@ class EmailSender:
                 "EMAIL_USE_TLS": "true",
                 "EMAIL_FROM_NAME": "AI Media Monitor"
             }
-            
+
             value = os.getenv(env_var, defaults.get(env_var, obj))
-            
+
             # Convert port to int and use_tls to boolean
             if env_var == "EMAIL_SMTP_PORT":
                 try:
@@ -73,7 +73,7 @@ class EmailSender:
                     return 587
             elif env_var == "EMAIL_USE_TLS":
                 return value.lower() in ("true", "1", "yes", "on")
-            
+
             return value
         else:
             return obj
@@ -84,10 +84,10 @@ class EmailSender:
         lines = markdown_content.split('\n')
         html_lines = []
         in_list = False
-        
+
         for line in lines:
             line = line.strip()
-            
+
             # Skip empty lines but preserve spacing
             if not line:
                 if in_list:
@@ -95,7 +95,7 @@ class EmailSender:
                     in_list = False
                 html_lines.append('')
                 continue
-            
+
             # Headers
             if line.startswith('# '):
                 if in_list:
@@ -136,11 +136,11 @@ class EmailSender:
                 # Convert links
                 processed_line = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', processed_line)
                 html_lines.append(f'<p>{processed_line}</p>')
-        
+
         # Close any remaining list
         if in_list:
             html_lines.append('</ul>')
-        
+
         return '\n'.join(html_lines)
 
     def _generate_html_content(self, report_data: dict[str, Any], markdown_content: str = None) -> str:
@@ -342,7 +342,7 @@ class EmailSender:
             # Read markdown content if available
             markdown_content = None
             if markdown_file and markdown_file.exists():
-                with open(markdown_file, 'r', encoding='utf-8') as f:
+                with open(markdown_file, encoding='utf-8') as f:
                     markdown_content = f.read()
 
             # Generate HTML content with markdown integration
