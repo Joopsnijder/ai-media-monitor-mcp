@@ -1,6 +1,7 @@
 """SQLite database manager for article storage."""
 
 import json
+import logging
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -16,6 +17,7 @@ class ArticleDatabase:
         """Initialize database connection and create tables if needed."""
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(exist_ok=True)
+        self.logger = logging.getLogger(__name__)
         self._init_database()
 
     def _init_database(self) -> None:
@@ -69,10 +71,15 @@ class ArticleDatabase:
                     ]),
                     article.mentions_ai
                 ))
+                self.logger.debug(f"Stored article: {article.title[:50]}... from {article.source}")
                 return True
         except sqlite3.IntegrityError:
             # Article already exists (duplicate URL)
+            self.logger.debug(f"Duplicate article skipped: {article.url}")
             return False
+        except Exception as e:
+            self.logger.error(f"Error storing article {article.url}: {e}")
+            raise
 
     def store_articles(self, articles: list[Article]) -> dict[str, int]:
         """Store multiple articles. Returns counts of inserted/duplicate articles."""
