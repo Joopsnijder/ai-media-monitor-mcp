@@ -52,7 +52,9 @@ uv sync >> "$LOG_FILE" 2>&1
 log "Collecting articles from media sources..."
 
 # Use client.py with new daily-collect action
-if uv run python client.py --action daily-collect >> "$LOG_FILE" 2>&1; then
+# Note: Python logging will create its own detailed log file
+# This bash log captures script-level operations
+if uv run python client.py --action daily-collect; then
     log "SUCCESS: Daily article collection completed"
 else
     log "ERROR: Failed to collect articles"

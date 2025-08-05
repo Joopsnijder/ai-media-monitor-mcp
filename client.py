@@ -114,64 +114,97 @@ class AIMediaMonitorClient:
             print(f"❌ Error identifying experts: {e}")
             return {}
 
-    async def daily_collect_articles(self) -> dict[str, Any]:
+    async def daily_collect_articles(self, logger=None) -> dict[str, Any]:
         """Collect and store articles in database for daily archival."""
-        print("📚 Running daily article collection...")
+        # Setup logger if not provided
+        if logger is None:
+            from src.ai_media_monitor.utils.logging_config import setup_daily_collection_logger
+            logger = setup_daily_collection_logger()
+
+        logger.info("Starting daily article collection")
 
         try:
             # Import database here to avoid circular imports
             from src.ai_media_monitor.models.article import Article
             from src.ai_media_monitor.storage.database import ArticleDatabase
+            from src.ai_media_monitor.utils.logging_config import log_exception, log_stats
 
-            # Initialize database
+            logger.info("Initializing database connection")
             db = ArticleDatabase()
 
-            # Scan recent articles (last 24 hours to catch any missed articles)
+            logger.info("Scanning media sources for recent articles (last 24 hours)")
             scan_data = await self.scan_media_sources(hours_back=24)
             articles_data = scan_data.get("articles", [])
 
             if not articles_data:
-                print("ℹ️  No new articles found")
-                return {"stored": 0, "duplicates": 0, "total_in_db": db.get_article_count()}
+                logger.info("No new AI-related articles found in RSS feeds")
+                total_count = db.get_article_count()
+                return {"stored": 0, "duplicates": 0, "total_in_db": total_count}
+
+            logger.info(f"Found {len(articles_data)} potential articles to process")
 
             # The articles_data contains Article objects serialized as dicts
             # For database storage, we need Article objects
             articles = []
-            for article_data in articles_data:
+            processing_errors = 0
+            
+            for i, article_data in enumerate(articles_data, 1):
                 try:
                     # Handle the case where articles are already Article objects or dicts
                     if hasattr(article_data, 'url'):  # It's an Article object
                         articles.append(article_data)
+                        logger.debug(f"Article {i}: Already Article object - {article_data.title[:50]}...")
                     else:  # It's a dict, convert to Article
-                        articles.append(Article(**article_data))
+                        article = Article(**article_data)
+                        articles.append(article)
+                        logger.debug(f"Article {i}: Converted to Article - {article.title[:50]}...")
                 except Exception as e:
-                    print(f"Warning: Could not process article: {e}")
+                    processing_errors += 1
+                    logger.warning(f"Could not process article {i}: {e}")
+                    if hasattr(article_data, 'get'):
+                        logger.debug(f"Failed article URL: {article_data.get('url', 'Unknown')}")
                     continue
 
+            logger.info(f"Successfully processed {len(articles)} articles, {processing_errors} errors")
+
             # Store in database
+            logger.info("Storing articles in database")
             result = db.store_articles(articles)
 
-            print(f"✅ Stored {result['inserted']} new articles")
-            print(f"ℹ️  Found {result['duplicates']} duplicate articles (skipped)")
+            logger.info(f"Storage complete: {result['inserted']} new, {result['duplicates']} duplicates")
 
             # Get database stats
+            logger.info("Gathering database statistics")
             total_articles = db.get_article_count()
             sources_stats = db.get_sources_stats(hours_back=168)  # Weekly stats
 
-            print(f"📊 Database now contains {total_articles} total articles")
-            print("📈 Articles by source (last 7 days):")
+            # Log comprehensive statistics
+            stats = {
+                "New articles stored": result["inserted"],
+                "Duplicate articles skipped": result["duplicates"],
+                "Processing errors": processing_errors,
+                "Total articles in database": total_articles,
+                "Active sources (last 7 days)": len(sources_stats)
+            }
+            log_stats(logger, stats)
+
+            # Log source breakdown
+            logger.info("Article distribution by source (last 7 days):")
             for source, count in sources_stats.items():
-                print(f"   - {source}: {count}")
+                logger.info(f"  {source}: {count} articles")
+
+            logger.info("Daily collection completed successfully")
 
             return {
                 "stored": result["inserted"],
                 "duplicates": result["duplicates"],
+                "processing_errors": processing_errors,
                 "total_in_db": total_articles,
                 "sources_stats": sources_stats
             }
 
         except Exception as e:
-            print(f"❌ Error during daily collection: {e}")
+            log_exception(logger, f"Critical error during daily collection: {e}")
             return {"error": str(e)}
 
 
