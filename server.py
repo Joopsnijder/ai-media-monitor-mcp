@@ -42,21 +42,69 @@ async def get_trending_topics(
     scan_result = await analyzer.scan_media_sources(hours_back=hours)
     articles = [Article(**a) for a in scan_result["articles"]]
 
-    # Group by topic
+    # Group by topic - assign each article to its most relevant topic only
     topic_articles = {}
     topic_sources = {}
+    used_articles = set()  # Track articles already assigned
+
+    def calculate_topic_relevance(article, topic):
+        """Calculate how relevant a topic is to an article based on title/content"""
+        score = 0
+        text = (article.title + (article.summary or "")).lower()
+        
+        # Topic-specific scoring
+        topic_keywords = {
+            "AI en privacy": ["privacy", "gegevens", "persoonlijk", "gdpr", "vertrouwelijk"],
+            "generative AI": ["genereren", "creëren", "tekst", "afbeelding", "chatbot", "gpt"],
+            "AI in retail": ["winkel", "verkoop", "klant", "e-commerce", "retail"],
+            "AI in finance": ["bank", "financieel", "betalen", "krediet", "investering"],
+            "AI in de zorg": ["zorg", "patient", "diagnose", "medisch", "ziekenhuis"],
+            "AI wetgeving": ["wet", "regel", "europa", "ai act", "compliance"],
+            "machine learning": ["leren", "training", "data", "algoritme", "model"]
+        }
+        
+        keywords = topic_keywords.get(topic, [])
+        for keyword in keywords:
+            if keyword in text:
+                score += 2
+        
+        # Base score if topic appears in title
+        if topic.lower() in article.title.lower():
+            score += 3
+            
+        return score
 
     for article in articles:
+        if id(article) in used_articles:
+            continue
+            
+        # Find the most relevant topic for this article
+        best_topic = None
+        best_score = 0
+        
         for topic in article.ai_topics:
             if categories and topic not in categories:
                 continue
+                
+            score = calculate_topic_relevance(article, topic)
+            if score > best_score:
+                best_score = score
+                best_topic = topic
+        
+        # If no specific relevance found, use the first topic
+        if best_topic is None and article.ai_topics:
+            valid_topics = [t for t in article.ai_topics if not categories or t in categories]
+            if valid_topics:
+                best_topic = valid_topics[0]
+        
+        if best_topic:
+            if best_topic not in topic_articles:
+                topic_articles[best_topic] = []
+                topic_sources[best_topic] = set()
 
-            if topic not in topic_articles:
-                topic_articles[topic] = []
-                topic_sources[topic] = set()
-
-            topic_articles[topic].append(article)
-            topic_sources[topic].add(article.source)
+            topic_articles[best_topic].append(article)
+            topic_sources[best_topic].add(article.source)
+            used_articles.add(id(article))
 
     # Create trending topics
     trending = []
