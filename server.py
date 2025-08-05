@@ -38,8 +38,12 @@ async def get_trending_topics(
     hours_map = {"day": 24, "week": 168, "month": 720}
     hours = hours_map.get(period, 168)
 
-    # Get articles
-    scan_result = await analyzer.scan_media_sources(hours_back=hours)
+    # Get articles - use database for weekly reports, RSS for shorter periods
+    if hours >= 48:  # Use database for periods longer than 48 hours
+        scan_result = await analyzer.get_articles_from_database(hours_back=hours)
+    else:
+        scan_result = await analyzer.scan_media_sources(hours_back=hours)
+
     articles = [Article(**a) for a in scan_result["articles"]]
 
     # Group by topic - assign each article to its most relevant topic only
@@ -51,7 +55,7 @@ async def get_trending_topics(
         """Calculate how relevant a topic is to an article based on title/content"""
         score = 0
         text = (article.title + (article.summary or "")).lower()
-        
+
         # Topic-specific scoring
         topic_keywords = {
             "AI en privacy": ["privacy", "gegevens", "persoonlijk", "gdpr", "vertrouwelijk"],
@@ -62,41 +66,41 @@ async def get_trending_topics(
             "AI wetgeving": ["wet", "regel", "europa", "ai act", "compliance"],
             "machine learning": ["leren", "training", "data", "algoritme", "model"]
         }
-        
+
         keywords = topic_keywords.get(topic, [])
         for keyword in keywords:
             if keyword in text:
                 score += 2
-        
+
         # Base score if topic appears in title
         if topic.lower() in article.title.lower():
             score += 3
-            
+
         return score
 
     for article in articles:
         if id(article) in used_articles:
             continue
-            
+
         # Find the most relevant topic for this article
         best_topic = None
         best_score = 0
-        
+
         for topic in article.ai_topics:
             if categories and topic not in categories:
                 continue
-                
+
             score = calculate_topic_relevance(article, topic)
             if score > best_score:
                 best_score = score
                 best_topic = topic
-        
+
         # If no specific relevance found, use the first topic
         if best_topic is None and article.ai_topics:
             valid_topics = [t for t in article.ai_topics if not categories or t in categories]
             if valid_topics:
                 best_topic = valid_topics[0]
-        
+
         if best_topic:
             if best_topic not in topic_articles:
                 topic_articles[best_topic] = []
@@ -169,8 +173,12 @@ async def identify_experts(
     hours_map = {"week": 168, "month": 720, "quarter": 2160}
     hours = hours_map.get(period, 720)
 
-    # Get articles
-    scan_result = await analyzer.scan_media_sources(hours_back=hours)
+    # Get articles - use database for longer periods
+    if hours >= 48:  # Use database for periods longer than 48 hours
+        scan_result = await analyzer.get_articles_from_database(hours_back=hours)
+    else:
+        scan_result = await analyzer.scan_media_sources(hours_back=hours)
+
     articles = [Article(**a) for a in scan_result["articles"]]
 
     # Filter by topic if specified

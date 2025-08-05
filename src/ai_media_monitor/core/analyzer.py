@@ -25,9 +25,13 @@ class MediaAnalyzer:
         """Parse RSS item into Article object"""
         try:
             # Delayed imports to avoid circular dependencies
-            from ..utils.text_analysis import is_ai_related, extract_ai_topics, extract_quotes_and_experts
+            from ..utils.text_analysis import (
+                extract_ai_topics,
+                extract_quotes_and_experts,
+                is_ai_related,
+            )
             from ..utils.web_utils import fetch_article_content
-            
+
             # Extract basic info
             title = item.get("title", "")
             url = item.get("link", "")
@@ -41,7 +45,16 @@ class MediaAnalyzer:
             try:
                 date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
             except (ValueError, TypeError):
-                date = datetime.now()
+                try:
+                    # Try alternative format without timezone
+                    date = datetime.strptime(date_str[:25], "%a, %d %b %Y %H:%M:%S")
+                    # Make timezone aware (UTC)
+                    from datetime import timezone
+                    date = date.replace(tzinfo=timezone.utc)
+                except (ValueError, TypeError):
+                    # Fallback to current time with timezone
+                    from datetime import timezone
+                    date = datetime.now(timezone.utc)
 
             # Fetch full content
             content = await fetch_article_content(session, url)
@@ -69,7 +82,8 @@ class MediaAnalyzer:
     async def scan_media_sources(self, hours_back: int = 24) -> dict[str, Any]:
         """Scan all media sources for recent AI articles"""
         articles = []
-        since_date = datetime.now() - timedelta(hours=hours_back)
+        from datetime import timezone
+        since_date = datetime.now(timezone.utc) - timedelta(hours=hours_back)
 
         async with aiohttp.ClientSession() as session:
             for _category, sources in self.config.media_sources.items():
@@ -100,6 +114,27 @@ class MediaAnalyzer:
                         print(f"Error processing {source.name}: {e}")
 
         return self._analyze_articles(articles, hours_back)
+
+    async def get_articles_from_database(self, hours_back: int = 168) -> dict[str, Any]:
+        """Get articles from database for analysis (used for weekly reports)"""
+        try:
+            from ..storage.database import ArticleDatabase
+
+            db = ArticleDatabase()
+            articles = db.get_articles_since(hours_back)
+
+            print(f"Retrieved {len(articles)} articles from database (last {hours_back} hours)")
+
+            return self._analyze_articles(articles, hours_back)
+
+        except ImportError:
+            # Fallback to RSS scanning if database not available
+            print("Database not available, falling back to RSS scanning")
+            return await self.scan_media_sources(hours_back)
+        except Exception as e:
+            print(f"Error reading from database: {e}")
+            print("Falling back to RSS scanning")
+            return await self.scan_media_sources(hours_back)
 
     async def _fetch_with_retry(
         self, session: aiohttp.ClientSession, url: str, retries: int = 3
@@ -158,7 +193,7 @@ class MediaAnalyzer:
             "scan_date": datetime.now().isoformat(),
             "hours_scanned": hours_back,
             "total_articles": len(articles),
-            "articles": [article.dict() for article in articles[:50]],  # Limit response
+            "articles": [article.model_dump() if hasattr(article, 'model_dump') else article.dict() for article in articles[:50]],  # Limit response
             "trending_topics": trending_topics,
             "potential_guests": potential_guests,
         }
@@ -166,9 +201,13 @@ class MediaAnalyzer:
     async def fetch_article(self, url: str) -> dict[str, Any]:
         """Fetch and analyze a specific article"""
         # Delayed imports to avoid circular dependencies
-        from ..utils.text_analysis import is_ai_related, extract_ai_topics, extract_quotes_and_experts
+        from ..utils.text_analysis import (
+            extract_ai_topics,
+            extract_quotes_and_experts,
+            is_ai_related,
+        )
         from ..utils.web_utils import fetch_article_content
-        
+
         async with aiohttp.ClientSession() as session:
             content = await fetch_article_content(session, url)
 

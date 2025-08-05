@@ -114,6 +114,66 @@ class AIMediaMonitorClient:
             print(f"❌ Error identifying experts: {e}")
             return {}
 
+    async def daily_collect_articles(self) -> dict[str, Any]:
+        """Collect and store articles in database for daily archival."""
+        print("📚 Running daily article collection...")
+
+        try:
+            # Import database here to avoid circular imports
+            from src.ai_media_monitor.models.article import Article
+            from src.ai_media_monitor.storage.database import ArticleDatabase
+
+            # Initialize database
+            db = ArticleDatabase()
+
+            # Scan recent articles (last 24 hours to catch any missed articles)
+            scan_data = await self.scan_media_sources(hours_back=24)
+            articles_data = scan_data.get("articles", [])
+
+            if not articles_data:
+                print("ℹ️  No new articles found")
+                return {"stored": 0, "duplicates": 0, "total_in_db": db.get_article_count()}
+
+            # The articles_data contains Article objects serialized as dicts
+            # For database storage, we need Article objects
+            articles = []
+            for article_data in articles_data:
+                try:
+                    # Handle the case where articles are already Article objects or dicts
+                    if hasattr(article_data, 'url'):  # It's an Article object
+                        articles.append(article_data)
+                    else:  # It's a dict, convert to Article
+                        articles.append(Article(**article_data))
+                except Exception as e:
+                    print(f"Warning: Could not process article: {e}")
+                    continue
+
+            # Store in database
+            result = db.store_articles(articles)
+
+            print(f"✅ Stored {result['inserted']} new articles")
+            print(f"ℹ️  Found {result['duplicates']} duplicate articles (skipped)")
+
+            # Get database stats
+            total_articles = db.get_article_count()
+            sources_stats = db.get_sources_stats(hours_back=168)  # Weekly stats
+
+            print(f"📊 Database now contains {total_articles} total articles")
+            print("📈 Articles by source (last 7 days):")
+            for source, count in sources_stats.items():
+                print(f"   - {source}: {count}")
+
+            return {
+                "stored": result["inserted"],
+                "duplicates": result["duplicates"],
+                "total_in_db": total_articles,
+                "sources_stats": sources_stats
+            }
+
+        except Exception as e:
+            print(f"❌ Error during daily collection: {e}")
+            return {"error": str(e)}
+
 
 def format_report_markdown(report_data: dict) -> str:
     """Format report data as Markdown."""
@@ -280,7 +340,7 @@ async def main():
     parser = argparse.ArgumentParser(description="AI Media Monitor MCP Client")
     parser.add_argument(
         "--action",
-        choices=["weekly-report", "scan", "trends", "experts"],
+        choices=["weekly-report", "scan", "trends", "experts", "daily-collect"],
         default="weekly-report",
         help="Action to perform",
     )
@@ -340,6 +400,13 @@ async def main():
                 report_data = experts_data
                 if not args.email_only:
                     json_file, md_file = await save_report(experts_data, args.format)
+
+        elif args.action == "daily-collect":
+            collection_data = await client.daily_collect_articles()
+            if collection_data and not collection_data.get("error"):
+                print("✅ Daily collection completed successfully")
+            else:
+                print("❌ Daily collection failed")
 
         # Send email if requested
         if (args.email or args.email_only) and report_data:
