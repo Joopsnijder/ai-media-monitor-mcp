@@ -40,37 +40,49 @@ class ArticleDatabase:
             """)
 
             # Create indexes for efficient queries
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_articles_date_published ON articles(date_published)")
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_articles_date_published ON articles(date_published)"
+            )
             conn.execute("CREATE INDEX IF NOT EXISTS idx_articles_source ON articles(source)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_articles_url ON articles(url)")
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_articles_date_stored ON articles(date_stored)")
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_articles_date_stored ON articles(date_stored)"
+            )
 
     def store_article(self, article: Article) -> bool:
         """Store an article in the database. Returns True if inserted, False if duplicate."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO articles (
                         url, title, source, date_published, content, summary,
                         ai_topics, quoted_experts, mentions_ai
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    article.url,
-                    article.title,
-                    article.source,
-                    article.date.isoformat(),
-                    article.content,
-                    article.summary,
-                    json.dumps(article.ai_topics),
-                    json.dumps([
-                        expert.model_dump() if hasattr(expert, 'model_dump')
-                        else expert.dict() if hasattr(expert, 'dict')
-                        else expert if isinstance(expert, dict)
-                        else str(expert)
-                        for expert in article.quoted_experts
-                    ]),
-                    article.mentions_ai
-                ))
+                """,
+                    (
+                        article.url,
+                        article.title,
+                        article.source,
+                        article.date.isoformat(),
+                        article.content,
+                        article.summary,
+                        json.dumps(article.ai_topics),
+                        json.dumps(
+                            [
+                                expert.model_dump()
+                                if hasattr(expert, "model_dump")
+                                else expert.dict()
+                                if hasattr(expert, "dict")
+                                else expert
+                                if isinstance(expert, dict)
+                                else str(expert)
+                                for expert in article.quoted_experts
+                            ]
+                        ),
+                        article.mentions_ai,
+                    ),
+                )
                 self.logger.debug(f"Stored article: {article.title[:50]}... from {article.source}")
                 return True
         except sqlite3.IntegrityError:
@@ -94,9 +106,13 @@ class ArticleDatabase:
 
         return {"inserted": inserted, "duplicates": duplicates}
 
-    def get_articles_since(self, hours_back: int, sources: list[str] | None = None) -> list[Article]:
+    def get_articles_since(
+        self, hours_back: int, sources: list[str] | None = None
+    ) -> list[Article]:
         """Get articles from the last N hours, optionally filtered by sources."""
-        since_date = datetime.now() - timedelta(hours=hours_back)
+        from datetime import timezone
+
+        since_date = datetime.now(timezone.utc) - timedelta(hours=hours_back)
 
         query = """
             SELECT url, title, source, date_published, content, summary,
@@ -120,8 +136,10 @@ class ArticleDatabase:
 
             for row in cursor:
                 # Parse JSON fields
-                ai_topics = json.loads(row['ai_topics']) if row['ai_topics'] else []
-                quoted_experts_data = json.loads(row['quoted_experts']) if row['quoted_experts'] else []
+                ai_topics = json.loads(row["ai_topics"]) if row["ai_topics"] else []
+                quoted_experts_data = (
+                    json.loads(row["quoted_experts"]) if row["quoted_experts"] else []
+                )
 
                 # Keep expert data as dicts - Article model expects list[dict[str, str]]
                 quoted_experts = []
@@ -130,19 +148,21 @@ class ArticleDatabase:
                         quoted_experts.append(expert_data)
                     elif isinstance(expert_data, str):
                         # Handle string expert data
-                        quoted_experts.append({"name": expert_data, "title": "", "organization": ""})
+                        quoted_experts.append(
+                            {"name": expert_data, "title": "", "organization": ""}
+                        )
                     # Skip other formats
 
                 article = Article(
-                    url=row['url'],
-                    title=row['title'],
-                    source=row['source'],
-                    date=datetime.fromisoformat(row['date_published']),
-                    content=row['content'],
-                    summary=row['summary'],
+                    url=row["url"],
+                    title=row["title"],
+                    source=row["source"],
+                    date=datetime.fromisoformat(row["date_published"]),
+                    content=row["content"],
+                    summary=row["summary"],
                     ai_topics=ai_topics,
                     quoted_experts=quoted_experts,
-                    mentions_ai=bool(row['mentions_ai'])
+                    mentions_ai=bool(row["mentions_ai"]),
                 )
                 articles.append(article)
 
@@ -154,7 +174,9 @@ class ArticleDatabase:
         params = []
 
         if hours_back:
-            since_date = datetime.now() - timedelta(hours=hours_back)
+            from datetime import timezone
+
+            since_date = datetime.now(timezone.utc) - timedelta(hours=hours_back)
             query += " WHERE date_published >= ?"
             params.append(since_date.isoformat())
 
@@ -164,28 +186,38 @@ class ArticleDatabase:
 
     def get_sources_stats(self, hours_back: int = 168) -> dict[str, int]:
         """Get article count by source for the given time period."""
-        since_date = datetime.now() - timedelta(hours=hours_back)
+        from datetime import timezone
+
+        since_date = datetime.now(timezone.utc) - timedelta(hours=hours_back)
 
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT source, COUNT(*) as count
                 FROM articles 
                 WHERE date_published >= ?
                 GROUP BY source
                 ORDER BY count DESC
-            """, [since_date.isoformat()])
+            """,
+                [since_date.isoformat()],
+            )
 
             return {row[0]: row[1] for row in cursor}
 
     def cleanup_old_articles(self, days_to_keep: int = 90) -> int:
         """Remove articles older than specified days. Returns number of deleted articles."""
-        cutoff_date = datetime.now() - timedelta(days=days_to_keep)
+        from datetime import timezone
+
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_to_keep)
 
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 DELETE FROM articles 
                 WHERE date_published < ?
-            """, [cutoff_date.isoformat()])
+            """,
+                [cutoff_date.isoformat()],
+            )
 
             return cursor.rowcount
 
@@ -215,9 +247,6 @@ class ArticleDatabase:
             return {
                 "database_path": str(self.db_path),
                 "total_articles": total_articles,
-                "date_range": {
-                    "earliest": date_range[0],
-                    "latest": date_range[1]
-                },
-                "sources": sources
+                "date_range": {"earliest": date_range[0], "latest": date_range[1]},
+                "sources": sources,
             }
