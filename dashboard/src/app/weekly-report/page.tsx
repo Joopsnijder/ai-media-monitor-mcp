@@ -18,6 +18,9 @@ export default function WeeklyReportPage() {
       }
       
       const data = await response.json();
+      console.log('Weekly report data:', data);
+      console.log('Highlights:', data.highlights);
+      console.log('Most quoted expert:', data.highlights?.most_quoted_expert);
       setReport(data);
       setError(null);
     } catch (error) {
@@ -229,39 +232,64 @@ export default function WeeklyReportPage() {
 
         {/* Experts */}
         <div className="border rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">👥 Top Experts ({(report.experts && report.experts.experts && report.experts.experts.length) || 0})</h2>
+          <h2 className="text-2xl font-bold mb-4">👥 Top Experts</h2>
           <p className="text-muted-foreground mb-6">Potentiële gasten voor AIToday Live</p>
           
-          {report.experts && report.experts.experts && report.experts.experts.length > 0 ? (
+          {report.experts && report.experts.experts ? (
             <div className="space-y-4">
-              {report.experts.experts.slice(0, 5).map((expert: any, index: number) => (
-                <div key={index} className="border rounded-lg p-4">
-                  <h4 className="font-medium">{expert.name || 'Onbekende expert'}</h4>
-                  {(expert.title || expert.organization) && (
+              {Array.isArray(report.experts.experts) ? (
+                report.experts.experts.slice(0, 5).map((expert: any, index: number) => (
+                  <div key={index} className="border rounded-lg p-4">
+                    <h4 className="font-medium">{String(expert.name || 'Onbekende expert')}</h4>
+                    {(expert.title || expert.organization) && (
+                      <p className="text-sm text-muted-foreground">
+                        {String(expert.title || 'Expert')}
+                        {expert.organization && ` bij ${String(expert.organization)}`}
+                      </p>
+                    )}
+                    <p className="text-sm mt-1">
+                      {Number(expert.quote_count || expert.recent_quotes || 0)} quotes deze week
+                    </p>
+                    {(expert.expertise_areas || expert.expertise) && Array.isArray(expert.expertise_areas || expert.expertise) && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {(expert.expertise_areas || expert.expertise || []).slice(0, 3).map((area: any, areaIndex: number) => (
+                          <span key={areaIndex} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                            {String(area)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {expert.quotes && Array.isArray(expert.quotes) && expert.quotes.length > 0 && (
+                      <div className="mt-2 p-2 bg-gray-100 rounded text-xs italic">
+                        "{String(expert.quotes[0].text || expert.quotes[0].quote || 'Quote niet beschikbaar')}"
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                // Handle single expert object
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-medium">{String(report.experts.experts.name || 'Onbekende expert')}</h4>
+                  {(report.experts.experts.title || report.experts.experts.organization) && (
                     <p className="text-sm text-muted-foreground">
-                      {expert.title || 'Expert'}
-                      {expert.organization && ` bij ${expert.organization}`}
+                      {String(report.experts.experts.title || 'Expert')}
+                      {report.experts.experts.organization && ` bij ${String(report.experts.experts.organization)}`}
                     </p>
                   )}
                   <p className="text-sm mt-1">
-                    {expert.quote_count || expert.recent_quotes || 0} quotes deze week
+                    {Number(report.experts.experts.quote_count || report.experts.experts.recent_quotes || 0)} quotes deze week
                   </p>
-                  {(expert.expertise_areas || expert.expertise) && (
+                  {(report.experts.experts.expertise_areas || report.experts.experts.expertise) && Array.isArray(report.experts.experts.expertise_areas || report.experts.experts.expertise) && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {(expert.expertise_areas || expert.expertise || []).slice(0, 3).map((area: string, areaIndex: number) => (
+                      {(report.experts.experts.expertise_areas || report.experts.experts.expertise || []).slice(0, 5).map((area: any, areaIndex: number) => (
                         <span key={areaIndex} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                          {area}
+                          {String(area)}
                         </span>
                       ))}
                     </div>
                   )}
-                  {expert.quotes && expert.quotes.length > 0 && (
-                    <div className="mt-2 p-2 bg-gray-100 rounded text-xs italic">
-                      "{expert.quotes[0].text || expert.quotes[0].quote || 'Quote niet beschikbaar'}"
-                    </div>
-                  )}
                 </div>
-              ))}
+              )}
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">
