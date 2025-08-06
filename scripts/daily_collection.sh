@@ -12,6 +12,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
+# Set up proper PATH for cron jobs (includes common locations for uv)
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
 # Create logs directory
 LOG_DIR="$PROJECT_DIR/logs"
 mkdir -p "$LOG_DIR"
