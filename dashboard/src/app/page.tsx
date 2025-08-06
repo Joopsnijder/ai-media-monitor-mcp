@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Database, FileText, Activity, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Database, FileText, Activity, AlertTriangle, CheckCircle, Clock, ExternalLink } from 'lucide-react';
 
 interface DatabaseStats {
   total_articles: number;
@@ -41,22 +43,26 @@ interface StatsData {
 export default function Dashboard() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [logStats, setLogStats] = useState<LogStats | null>(null);
+  const [recentLogs, setRecentLogs] = useState<LogInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   const fetchData = async () => {
     try {
-      const [statsResponse, logsResponse] = await Promise.all([
+      const [statsResponse, logsResponse, recentLogsResponse] = await Promise.all([
         fetch('/api/stats'),
-        fetch('/api/logs?type=stats')
+        fetch('/api/logs?type=stats'),
+        fetch('/api/logs?type=recent&count=10')
       ]);
 
-      if (statsResponse.ok && logsResponse.ok) {
+      if (statsResponse.ok && logsResponse.ok && recentLogsResponse.ok) {
         const statsData = await statsResponse.json();
         const logsData = await logsResponse.json();
+        const recentLogsData = await recentLogsResponse.json();
         
         setStats(statsData);
         setLogStats(logsData);
+        setRecentLogs(recentLogsData);
         setLastUpdate(new Date());
       }
     } catch (error) {
@@ -238,32 +244,65 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Collection Status */}
+        {/* Recent Log Files */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Collection Status</CardTitle>
-            <CardDescription>Latest article collection attempts</CardDescription>
+            <CardTitle>Recent Log Files</CardTitle>
+            <CardDescription>All recent collection and report logs</CardDescription>
           </CardHeader>
           <CardContent>
-            {logStats?.lastCollection ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Last Collection:</span>
-                  <Badge 
-                    variant={logStats.lastCollection.status === 'success' ? 'default' : 'destructive'}
-                  >
-                    {logStats.lastCollection.status}
-                  </Badge>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {logStats.lastCollection.date}
-                </div>
-                {logStats.lastCollection.summary && (
-                  <div className="text-sm">{logStats.lastCollection.summary}</div>
-                )}
-              </div>
+            {recentLogs.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Log File</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Summary</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentLogs.map((log) => (
+                    <TableRow key={log.filename}>
+                      <TableCell className="font-medium">
+                        {log.filename}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {log.type === 'daily_collection' ? 'Daily Collection' : 'Weekly Report'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(log.lastModified).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            log.status === 'success' ? 'default' : 
+                            log.status === 'error' ? 'destructive' : 'secondary'
+                          }
+                        >
+                          {log.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm max-w-xs truncate">
+                        {log.summary || 'No summary available'}
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/logs/${log.filename}`}>
+                          <Button variant="ghost" size="sm">
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
-              <p className="text-sm text-muted-foreground">No recent collection data available</p>
+              <p className="text-sm text-muted-foreground">No log files available</p>
             )}
           </CardContent>
         </Card>
