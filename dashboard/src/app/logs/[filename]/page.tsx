@@ -97,10 +97,29 @@ export default function LogDetailPage() {
   };
 
   const getLogStatus = (content: string) => {
-    const lines = content.toLowerCase();
-    if (lines.includes('error') || lines.includes('failed')) return 'error';
-    if (lines.includes('=== statistics ===')) return 'success';
-    return 'running';
+    const lines = content.split('\n');
+    
+    // Check for explicit success indicators
+    const hasSuccessIndicator = lines.some(line => 
+      line.includes('SUCCESS:') || 
+      line.includes('completed successfully') ||
+      line.includes('=== STATISTICS ===')
+    );
+    
+    // Check for error indicators
+    const hasErrorIndicator = lines.some(line => 
+      line.toLowerCase().includes('error:') || 
+      line.toLowerCase().includes('failed') ||
+      line.toLowerCase().includes('exception:')
+    );
+
+    if (hasErrorIndicator && !hasSuccessIndicator) {
+      return 'error';
+    } else if (hasSuccessIndicator) {
+      return 'success';
+    } else {
+      return 'running';
+    }
   };
 
   if (loading) {
