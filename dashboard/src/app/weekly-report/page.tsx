@@ -158,20 +158,25 @@ export default function WeeklyReportPage() {
             <div className="mb-6">
               <h3 className="font-semibold text-lg mb-2">💬 Meest Geciteerde Expert</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium">{report.highlights.most_quoted_expert.name}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {report.highlights.most_quoted_expert.title} bij {report.highlights.most_quoted_expert.organization}
-                </p>
+                <h4 className="font-medium">{report.highlights.most_quoted_expert.name || 'Onbekende expert'}</h4>
+                {(report.highlights.most_quoted_expert.title || report.highlights.most_quoted_expert.organization) && (
+                  <p className="text-sm text-muted-foreground">
+                    {report.highlights.most_quoted_expert.title || 'Expert'} 
+                    {report.highlights.most_quoted_expert.organization && ` bij ${report.highlights.most_quoted_expert.organization}`}
+                  </p>
+                )}
                 <p className="text-sm mt-2">
-                  {report.highlights.most_quoted_expert.quote_count} quotes in media deze week
+                  {report.highlights.most_quoted_expert.quote_count || report.highlights.most_quoted_expert.recent_quotes || 0} quotes in media deze week
                 </p>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {report.highlights.most_quoted_expert.expertise_areas.map((area: string, index: number) => (
-                    <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                      {area}
-                    </span>
-                  ))}
-                </div>
+                {(report.highlights.most_quoted_expert.expertise_areas || report.highlights.most_quoted_expert.expertise) && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {(report.highlights.most_quoted_expert.expertise_areas || report.highlights.most_quoted_expert.expertise || []).slice(0, 5).map((area: string, index: number) => (
+                      <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                        {area}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -179,81 +184,98 @@ export default function WeeklyReportPage() {
 
         {/* Trending Topics */}
         <div className="border rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">📈 Trending Topics ({report.trends.topics.length})</h2>
+          <h2 className="text-2xl font-bold mb-4">📈 Trending Topics ({(report.trends && report.trends.topics && report.trends.topics.length) || 0})</h2>
           <p className="text-muted-foreground mb-6">AI onderwerpen die deze week opvielen</p>
           
-          <div className="space-y-4">
-            {report.trends.topics.slice(0, 5).map((topic: any, index: number) => (
-              <div key={index} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{topic.topic}</span>
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    topic.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
-                    topic.sentiment === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {topic.sentiment}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {topic.mentions} vermeldingen • {topic.sources.length} bronnen
-                </p>
-                <p className="text-sm">{topic.suggested_angle}</p>
-                {topic.key_articles.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-xs font-medium">Belangrijkste artikel:</p>
-                    <a 
-                      href={topic.key_articles[0].url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline"
-                    >
-                      {topic.key_articles[0].title} ↗
-                    </a>
+          {report.trends && report.trends.topics && report.trends.topics.length > 0 ? (
+            <div className="space-y-4">
+              {report.trends.topics.slice(0, 5).map((topic: any, index: number) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{topic.topic || 'Onbekend onderwerp'}</span>
+                    <span className={`px-2 py-1 rounded text-sm ${
+                      topic.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
+                      topic.sentiment === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {topic.sentiment || 'neutral'}
+                    </span>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {topic.mentions || 0} vermeldingen • {(topic.sources && topic.sources.length) || 0} bronnen
+                  </p>
+                  <p className="text-sm">{topic.suggested_angle || 'Geen suggestie beschikbaar'}</p>
+                  {topic.key_articles && topic.key_articles.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs font-medium">Belangrijkste artikel:</p>
+                      <a 
+                        href={topic.key_articles[0].url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        {topic.key_articles[0].title || 'Artikel titel niet beschikbaar'} ↗
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              Geen trending topics beschikbaar
+            </p>
+          )}
         </div>
 
         {/* Experts */}
         <div className="border rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">👥 Top Experts ({report.experts.experts.length})</h2>
+          <h2 className="text-2xl font-bold mb-4">👥 Top Experts ({(report.experts && report.experts.experts && report.experts.experts.length) || 0})</h2>
           <p className="text-muted-foreground mb-6">Potentiële gasten voor AIToday Live</p>
           
-          <div className="space-y-4">
-            {report.experts.experts.slice(0, 5).map((expert: any, index: number) => (
-              <div key={index} className="border rounded-lg p-4">
-                <h4 className="font-medium">{expert.name}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {expert.title} bij {expert.organization}
-                </p>
-                <p className="text-sm mt-1">
-                  {expert.quote_count} quotes deze week
-                </p>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {expert.expertise_areas.slice(0, 3).map((area: string, areaIndex: number) => (
-                    <span key={areaIndex} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                      {area}
-                    </span>
-                  ))}
+          {report.experts && report.experts.experts && report.experts.experts.length > 0 ? (
+            <div className="space-y-4">
+              {report.experts.experts.slice(0, 5).map((expert: any, index: number) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <h4 className="font-medium">{expert.name || 'Onbekende expert'}</h4>
+                  {(expert.title || expert.organization) && (
+                    <p className="text-sm text-muted-foreground">
+                      {expert.title || 'Expert'}
+                      {expert.organization && ` bij ${expert.organization}`}
+                    </p>
+                  )}
+                  <p className="text-sm mt-1">
+                    {expert.quote_count || expert.recent_quotes || 0} quotes deze week
+                  </p>
+                  {(expert.expertise_areas || expert.expertise) && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {(expert.expertise_areas || expert.expertise || []).slice(0, 3).map((area: string, areaIndex: number) => (
+                        <span key={areaIndex} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                          {area}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {expert.quotes && expert.quotes.length > 0 && (
+                    <div className="mt-2 p-2 bg-gray-100 rounded text-xs italic">
+                      "{expert.quotes[0].text || expert.quotes[0].quote || 'Quote niet beschikbaar'}"
+                    </div>
+                  )}
                 </div>
-                {expert.quotes.length > 0 && (
-                  <div className="mt-2 p-2 bg-gray-100 rounded text-xs italic">
-                    "{expert.quotes[0].text}"
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              Geen experts beschikbaar
+            </p>
+          )}
         </div>
 
         {/* Topic Suggestions */}
         <div className="border rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">💡 Podcast Topic Suggesties ({report.suggestions.suggestions.length})</h2>
+          <h2 className="text-2xl font-bold mb-4">💡 Podcast Topic Suggesties ({(report.suggestions && report.suggestions.suggestions && report.suggestions.suggestions.length) || 0})</h2>
           <p className="text-muted-foreground mb-6">Concrete ideeën voor AIToday Live afleveringen</p>
           
-          {report.suggestions.suggestions.length > 0 ? (
+          {report.suggestions && report.suggestions.suggestions && report.suggestions.suggestions.length > 0 ? (
             <div className="space-y-6">
               {report.suggestions.suggestions.map((suggestion: any, index: number) => (
                 <div key={index} className="border rounded-lg p-6">
