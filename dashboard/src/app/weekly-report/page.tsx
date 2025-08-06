@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Separator } from '@/components/ui/separator';
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -161,7 +160,7 @@ export default function WeeklyReportPage() {
               Terug naar Dashboard
             </Button>
           </Link>
-          <Separator orientation="vertical" className="h-6" />
+          <div className="h-6 w-px bg-border"></div>
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <Calendar className="w-8 h-8" />
