@@ -1,6 +1,8 @@
 """Web utilities for fetching content and bypassing paywalls."""
 
 import asyncio
+import os
+from urllib.parse import urlparse
 
 import aiohttp
 
@@ -58,8 +60,55 @@ async def bypass_paywall(session: aiohttp.ClientSession, url: str) -> str | None
     return None
 
 
+async def fetch_fd_content_with_auth(session: aiohttp.ClientSession, url: str) -> str | None:
+    """Fetch FD.nl content using credentials from environment variables"""
+    username = os.getenv("FD_USERNAME")
+    password = os.getenv("FD_PASSWORD")
+
+    if not username or not password:
+        print("FD.nl credentials not found in environment variables")
+        return None
+
+    try:
+        # First, get the login page to establish session
+        login_url = "https://fd.nl/login"
+        async with session.get(login_url) as response:
+            login_page = await response.text()
+
+        # Login with credentials
+        login_data = {
+            "username": username,
+            "password": password,
+        }
+
+        async with session.post(login_url, data=login_data) as response:
+            if response.status != 200:
+                print(f"FD.nl login failed with status {response.status}")
+                return None
+
+        # Now fetch the article content with authenticated session
+        async with session.get(url, timeout=aiohttp.ClientTimeout(total=30)) as response:
+            if response.status == 200:
+                return await response.text()
+            else:
+                print(f"Failed to fetch FD.nl content, status: {response.status}")
+                return None
+
+    except Exception as e:
+        print(f"Error fetching FD.nl content with authentication: {e}")
+        return None
+
+
 async def fetch_article_content(session: aiohttp.ClientSession, url: str) -> str | None:
     """Fetch article content, using paywall bypass if needed"""
+    # Check if this is an FD.nl URL and try authentication first
+    parsed_url = urlparse(url)
+    if "fd.nl" in parsed_url.netloc.lower():
+        fd_content = await fetch_fd_content_with_auth(session, url)
+        if fd_content:
+            return fd_content
+        # If FD auth fails, fall through to regular methods
+
     # First try direct fetch
     content = await fetch_with_retry(session, url)
 
