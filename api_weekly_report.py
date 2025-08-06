@@ -8,35 +8,61 @@ import json
 import sys
 import os
 import warnings
+from io import StringIO
 
-# Suppress all warnings and stderr output
-warnings.filterwarnings('ignore')
-sys.stderr = open(os.devnull, 'w')
+# Completely redirect stdout to capture all print statements
+original_stdout = sys.stdout
+captured_output = StringIO()
 
-# Set environment variable to suppress database debug output
-os.environ['PYTHONHASHSEED'] = '0'
+try:
+    # Redirect all output
+    sys.stdout = captured_output
+    sys.stderr = open(os.devnull, 'w')
+    warnings.filterwarnings('ignore')
+    
+    # Set environment variables to suppress any debug output
+    os.environ['PYTHONHASHSEED'] = '0'
+    os.environ['PYTHONUNBUFFERED'] = '0'
+    
+    async def main():
+        try:
+            # Import the server function directly
+            from server import get_weekly_report
+            
+            # Generate the report
+            report_data = await get_weekly_report()
+            
+            # Restore stdout only for final JSON output
+            sys.stdout = original_stdout
+            
+            # Output only clean JSON
+            print(json.dumps(report_data, default=str, ensure_ascii=False))
+            
+        except Exception as e:
+            # Restore stdout for error output
+            sys.stdout = original_stdout
+            sys.stderr = sys.__stderr__
+            
+            error_response = {
+                "error": "Failed to generate weekly report",
+                "details": str(e),
+                "type": str(type(e).__name__)
+            }
+            print(json.dumps(error_response))
+            sys.exit(1)
 
-async def main():
-    try:
-        # Import the server function directly
-        from server import get_weekly_report
-        
-        # Generate the report
-        report_data = await get_weekly_report()
-        
-        # Output only JSON to stdout
-        print(json.dumps(report_data, default=str, ensure_ascii=False))
-        
-    except Exception as e:
-        # Restore stderr for error output
-        sys.stderr = sys.__stderr__
-        error_response = {
-            "error": "Failed to generate weekly report",
-            "details": str(e),
-            "type": str(type(e).__name__)
-        }
-        print(json.dumps(error_response))
-        sys.exit(1)
+    if __name__ == "__main__":
+        asyncio.run(main())
 
-if __name__ == "__main__":
-    asyncio.run(main())
+except Exception as e:
+    # Final fallback - restore stdout and output error
+    sys.stdout = original_stdout
+    sys.stderr = sys.__stderr__
+    
+    error_response = {
+        "error": "Script execution failed",
+        "details": str(e),
+        "type": str(type(e).__name__)
+    }
+    print(json.dumps(error_response))
+    sys.exit(1)
