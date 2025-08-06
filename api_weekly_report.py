@@ -7,9 +7,14 @@ import asyncio
 import json
 import sys
 import os
+import warnings
 
-# Suppress all print statements by redirecting stderr to devnull
+# Suppress all warnings and stderr output
+warnings.filterwarnings('ignore')
 sys.stderr = open(os.devnull, 'w')
+
+# Set environment variable to suppress database debug output
+os.environ['PYTHONHASHSEED'] = '0'
 
 async def main():
     try:
@@ -23,10 +28,12 @@ async def main():
         print(json.dumps(report_data, default=str, ensure_ascii=False))
         
     except Exception as e:
-        # Output error as JSON
+        # Restore stderr for error output
+        sys.stderr = sys.__stderr__
         error_response = {
             "error": "Failed to generate weekly report",
-            "details": str(e)
+            "details": str(e),
+            "type": str(type(e).__name__)
         }
         print(json.dumps(error_response))
         sys.exit(1)
