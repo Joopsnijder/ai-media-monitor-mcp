@@ -64,7 +64,7 @@ async def get_trending_topics(
             "AI in finance": ["bank", "financieel", "betalen", "krediet", "investering"],
             "AI in de zorg": ["zorg", "patient", "diagnose", "medisch", "ziekenhuis"],
             "AI wetgeving": ["wet", "regel", "europa", "ai act", "compliance"],
-            "machine learning": ["leren", "training", "data", "algoritme", "model"]
+            "machine learning": ["leren", "training", "data", "algoritme", "model"],
         }
 
         keywords = topic_keywords.get(topic, [])
@@ -254,9 +254,7 @@ async def identify_experts(
     name="generate_topic_suggestions",
     description="Generate podcast topic suggestions based on media trends",
 )
-async def generate_topic_suggestions(
-    focus_areas: list[str] | None = None
-) -> dict[str, Any]:
+async def generate_topic_suggestions(focus_areas: list[str] | None = None) -> dict[str, Any]:
     """Generate actionable podcast topic suggestions"""
     # Get recent trends
     trends = await get_trending_topics(period="week", min_mentions=2)
