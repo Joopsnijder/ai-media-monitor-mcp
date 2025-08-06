@@ -17,6 +17,7 @@ import aiofiles
 
 try:
     from src.ai_media_monitor.utils.email_sender import EmailSender
+
     EMAIL_AVAILABLE = True
 except ImportError:
     EMAIL_AVAILABLE = False
@@ -119,6 +120,7 @@ class AIMediaMonitorClient:
         # Setup logger if not provided
         if logger is None:
             from src.ai_media_monitor.utils.logging_config import setup_daily_collection_logger
+
             logger = setup_daily_collection_logger()
 
         logger.info("Starting daily article collection")
@@ -147,13 +149,15 @@ class AIMediaMonitorClient:
             # For database storage, we need Article objects
             articles = []
             processing_errors = 0
-            
+
             for i, article_data in enumerate(articles_data, 1):
                 try:
                     # Handle the case where articles are already Article objects or dicts
-                    if hasattr(article_data, 'url'):  # It's an Article object
+                    if hasattr(article_data, "url"):  # It's an Article object
                         articles.append(article_data)
-                        logger.debug(f"Article {i}: Already Article object - {article_data.title[:50]}...")
+                        logger.debug(
+                            f"Article {i}: Already Article object - {article_data.title[:50]}..."
+                        )
                     else:  # It's a dict, convert to Article
                         article = Article(**article_data)
                         articles.append(article)
@@ -161,17 +165,21 @@ class AIMediaMonitorClient:
                 except Exception as e:
                     processing_errors += 1
                     logger.warning(f"Could not process article {i}: {e}")
-                    if hasattr(article_data, 'get'):
+                    if hasattr(article_data, "get"):
                         logger.debug(f"Failed article URL: {article_data.get('url', 'Unknown')}")
                     continue
 
-            logger.info(f"Successfully processed {len(articles)} articles, {processing_errors} errors")
+            logger.info(
+                f"Successfully processed {len(articles)} articles, {processing_errors} errors"
+            )
 
             # Store in database
             logger.info("Storing articles in database")
             result = db.store_articles(articles)
 
-            logger.info(f"Storage complete: {result['inserted']} new, {result['duplicates']} duplicates")
+            logger.info(
+                f"Storage complete: {result['inserted']} new, {result['duplicates']} duplicates"
+            )
 
             # Get database stats
             logger.info("Gathering database statistics")
@@ -184,7 +192,7 @@ class AIMediaMonitorClient:
                 "Duplicate articles skipped": result["duplicates"],
                 "Processing errors": processing_errors,
                 "Total articles in database": total_articles,
-                "Active sources (last 7 days)": len(sources_stats)
+                "Active sources (last 7 days)": len(sources_stats),
             }
             log_stats(logger, stats)
 
@@ -200,7 +208,7 @@ class AIMediaMonitorClient:
                 "duplicates": result["duplicates"],
                 "processing_errors": processing_errors,
                 "total_in_db": total_articles,
-                "sources_stats": sources_stats
+                "sources_stats": sources_stats,
             }
 
         except Exception as e:
@@ -350,9 +358,7 @@ async def send_email_report(report_data: dict, markdown_file: Path = None, json_
 
         # Send email
         success = await email_sender.send_report_email(
-            report_data=report_data,
-            markdown_file=markdown_file,
-            json_file=json_file
+            report_data=report_data, markdown_file=markdown_file, json_file=json_file
         )
 
         return success

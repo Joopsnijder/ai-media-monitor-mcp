@@ -50,10 +50,12 @@ class MediaAnalyzer:
                     date = datetime.strptime(date_str[:25], "%a, %d %b %Y %H:%M:%S")
                     # Make timezone aware (UTC)
                     from datetime import timezone
+
                     date = date.replace(tzinfo=timezone.utc)
                 except (ValueError, TypeError):
                     # Fallback to current time with timezone
                     from datetime import timezone
+
                     date = datetime.now(timezone.utc)
 
             # Fetch full content
@@ -83,6 +85,7 @@ class MediaAnalyzer:
         """Scan all media sources for recent AI articles"""
         articles = []
         from datetime import timezone
+
         since_date = datetime.now(timezone.utc) - timedelta(hours=hours_back)
 
         async with aiohttp.ClientSession() as session:
@@ -193,7 +196,10 @@ class MediaAnalyzer:
             "scan_date": datetime.now().isoformat(),
             "hours_scanned": hours_back,
             "total_articles": len(articles),
-            "articles": [article.model_dump() if hasattr(article, 'model_dump') else article.dict() for article in articles[:50]],  # Limit response
+            "articles": [
+                article.model_dump() if hasattr(article, "model_dump") else article.dict()
+                for article in articles[:50]
+            ],  # Limit response
             "trending_topics": trending_topics,
             "potential_guests": potential_guests,
         }
