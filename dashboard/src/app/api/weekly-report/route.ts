@@ -4,11 +4,11 @@ import path from 'path';
 
 export async function GET() {
   try {
-    // Execute the weekly report script
-    const scriptPath = path.join(process.cwd(), '..', 'client.py');
+    // Create a simple Python script that only outputs JSON
+    const scriptPath = path.join(process.cwd(), '..', 'api_weekly_report.py');
     
     const promise = new Promise((resolve, reject) => {
-      const python = spawn('python', [scriptPath, '--action', 'weekly-report'], {
+      const python = spawn('python', [scriptPath], {
         cwd: path.join(process.cwd(), '..'),
         env: { ...process.env }
       });
@@ -33,7 +33,7 @@ export async function GET() {
             const report = JSON.parse(stdout);
             resolve(report);
           } catch (error) {
-            reject(new Error(`Failed to parse weekly report JSON: ${error}`));
+            reject(new Error(`Failed to parse weekly report JSON: ${stdout}\nError: ${error}`));
           }
         }
       });
@@ -49,7 +49,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error generating weekly report:', error);
     return NextResponse.json(
-      { error: 'Failed to generate weekly report' },
+      { error: 'Failed to generate weekly report', details: error.message },
       { status: 500 }
     );
   }
