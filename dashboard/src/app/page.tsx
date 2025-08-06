@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Database, FileText, Activity, AlertTriangle, CheckCircle, Clock, ExternalLink } from 'lucide-react';
+import { Database, FileText, Activity, AlertTriangle, CheckCircle, Clock, ExternalLink, Calendar } from 'lucide-react';
 
 interface DatabaseStats {
   total_articles: number;
@@ -116,6 +116,12 @@ export default function Dashboard() {
             <Badge variant="outline" className="text-xs">
               Last update: {lastUpdate.toLocaleTimeString()}
             </Badge>
+            <Link href="/weekly-report">
+              <Button size="sm" variant="outline" className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Weekly Report
+              </Button>
+            </Link>
             <Button 
               onClick={fetchData} 
               size="sm"
